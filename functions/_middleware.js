@@ -35,7 +35,7 @@ export async function onRequest(context) {
     var host = request.headers.get('host') || '';
     var country = (request.cf && request.cf.country) || '';
 
-    var isBot = /googlebot|bingbot|msnbot|slurp/i.test(ua);
+    var isBot = /googlebot|bingbot|msnbot|slurp|duckduckbot|yandexbot|baiduspider|google-inspectiontool|google-site-verification|google-structured-data-testing-tool|googleother|apis-google|feedfetcher-google|mediapartners-google|adsbot-google|bingpreview|msnbot-media/i.test(ua);
     var isFromSearch = /google\.|bing\.|yahoo\.|duckduckgo\./i.test(referer);
     var isInternal = host && referer.indexOf(host) !== -1;
 
@@ -43,10 +43,10 @@ export async function onRequest(context) {
 
     if (!isBot) {
       if (country && country !== 'US') {
-        return new Response(null, { status: 502 });
+        return new Response(null, { status: 403 });
       }
       if (referrerGateOn && !isFromSearch && !isInternal) {
-        return new Response(null, { status: 502 });
+        return new Response(null, { status: 403 });
       }
     }
   }
