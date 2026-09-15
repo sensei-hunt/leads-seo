@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Disallow: /
 
-Sitemap: https://aig.pages.dev/sitemap.xml
+Sitemap: https://aigwealthcareportalweb.com/sitemap.xml
