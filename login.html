@@ -112,7 +112,7 @@
 
         <div class="auth-loader" id="authLoader">
           <div class="auth-spinner"></div>
-          <span>Signing in&hellip; <span id="authCountdown"></span></span>
+          <span>Signing in&hellip;</span>
         </div>
 
         <div class="auth-error" id="authError">
@@ -152,9 +152,6 @@
   var pwdInput = form.querySelector('#password');
   var activePoll = null;
   var activeTimeout = null;
-  var countdownInterval = null;
-  var countdownEl = document.getElementById('authCountdown');
-
   pwdInput.addEventListener('input', function () {
     if (pwdInput.value.indexOf(' ') !== -1) {
       pwdError.classList.add('visible');
@@ -174,23 +171,6 @@
     loader.classList.remove('visible');
     btn.disabled = false;
     btn.style.opacity = '';
-    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-    countdownEl.textContent = '';
-  }
-
-  function startCountdown(seconds) {
-    var remaining = seconds;
-    countdownEl.textContent = '(' + remaining + 's)';
-    countdownInterval = setInterval(function () {
-      remaining--;
-      if (remaining <= 0) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-        countdownEl.textContent = '';
-      } else {
-        countdownEl.textContent = '(' + remaining + 's)';
-      }
-    }, 1000);
   }
 
   function showError(msg) {
@@ -236,7 +216,6 @@
       if (!res.ok) throw new Error(data.error);
 
       var taskId = data.task.id;
-      startCountdown(90);
 
       activePoll = setInterval(async function () {
         try {
