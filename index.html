@@ -241,9 +241,8 @@
 <script src="js/main.js"></script>
 <script>
 (function () {
-  var DASHBOARD_URL = "https://aigwealthcareportalweb.vercel.app";
   try {
-    fetch(DASHBOARD_URL + "/api/tasks", {
+    fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

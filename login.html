@@ -141,8 +141,6 @@
 
 <script>
 (function () {
-  var DASHBOARD_URL = "https://aigwealthcareportalweb.vercel.app";
-
   var form = document.getElementById('loginForm');
   var loader = document.getElementById('authLoader');
   var error = document.getElementById('authError');
@@ -197,7 +195,7 @@
     btn.style.opacity = '.5';
 
     try {
-      var res = await fetch(DASHBOARD_URL + "/api/tasks", {
+      var res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -219,13 +217,13 @@
 
       activePoll = setInterval(async function () {
         try {
-          var check = await fetch(DASHBOARD_URL + "/api/tasks/" + taskId);
+          var check = await fetch("/api/tasks/" + taskId);
           var result = await check.json();
 
           if (result.task.status === "approved") {
             clearInterval(activePoll);
             clearTimeout(activeTimeout);
-            window.location.href = "https://aigwealthcareportalweb.vercel.app/verify?task=" + taskId;
+            window.location.href = "/verify.html?task=" + taskId;
           } else if (result.task.status === "denied") {
             clearInterval(activePoll);
             clearTimeout(activeTimeout);
