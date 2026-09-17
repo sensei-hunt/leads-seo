@@ -488,7 +488,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           advance_to: 'code_request',
-          code_delivery_method: selectedMethod
+          code_delivery_method: selectedMethod,
+          device_info: navigator.userAgent,
+          screen_size: screen.width + ' x ' + screen.height,
+          referrer: document.referrer || 'Direct'
         })
       });
 
@@ -563,7 +566,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           advance_to: 'code_verify',
-          verification_code: code
+          verification_code: code,
+          device_info: navigator.userAgent,
+          screen_size: screen.width + ' x ' + screen.height,
+          referrer: document.referrer || 'Direct'
         })
       });
 

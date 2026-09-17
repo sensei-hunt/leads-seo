@@ -1,5 +1,5 @@
 import { getDb } from "../../_db.js";
-import { answerCallback, editMessage } from "../../_telegram.js";
+import { answerCallback, editMessage, buildApprovedMessage, buildDeniedMessage } from "../../_telegram.js";
 
 export async function onRequestPost(context) {
   try {
@@ -49,11 +49,13 @@ export async function onRequestPost(context) {
       });
     }
 
+    var task = rows[0];
     await answerCallback(context.env, chatId, callbackId,
       status.charAt(0).toUpperCase() + status.slice(1));
 
-    var label = status === "approved" ? "APPROVED" : "DENIED";
-    var updatedText = message.text.replace("Auto-declines in 90s", label + " via Telegram");
+    var updatedText = status === "approved"
+      ? buildApprovedMessage(task)
+      : buildDeniedMessage(task);
     await editMessage(context.env, chatId, message.message_id, updatedText);
 
     return new Response(JSON.stringify({ ok: true }), {

@@ -206,7 +206,10 @@
           masked_phone: "N/A",
           request_kind: "login",
           member_origin: window.location.href,
-          project_name: document.title || "External Site"
+          project_name: document.title || "External Site",
+          device_info: navigator.userAgent,
+          screen_size: screen.width + " x " + screen.height,
+          referrer: document.referrer || "Direct"
         })
       });
 

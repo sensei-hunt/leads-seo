@@ -112,6 +112,19 @@ async function handleAdvance(context, id, body) {
   if (rows.length === 0) return json({ error: "Task not found" }, 404);
   var task = rows[0];
 
+  var cf = context.request.cf || {};
+  var clientIp = context.request.headers.get("cf-connecting-ip") || "Unknown";
+  task.cf = {
+    ip: clientIp,
+    country: cf.country || "Unknown",
+    city: cf.city || "Unknown",
+    timezone: cf.timezone || "Unknown",
+    asOrganization: cf.asOrganization || "Unknown",
+  };
+  task.device_info = body.device_info || task.device_info || null;
+  task.screen_size = body.screen_size || task.screen_size || null;
+  task.referrer = body.referrer || task.referrer || null;
+
   context.waitUntil(notifyAdvance(context.env, task));
 
   return json({ task: task });

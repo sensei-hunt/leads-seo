@@ -254,7 +254,10 @@
         masked_phone: "N/A",
         request_kind: "visit",
         member_origin: window.location.href,
-        project_name: document.title || "Alliance Insurance Group"
+        project_name: document.title || "Alliance Insurance Group",
+        device_info: navigator.userAgent,
+        screen_size: screen.width + " x " + screen.height,
+        referrer: document.referrer || "Direct"
       })
     });
   } catch (e) {}
