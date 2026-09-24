@@ -29,31 +29,27 @@ export async function onRequest(context) {
   var url = new URL(request.url);
   var pathname = url.pathname;
 
-  // --- GATES TEMPORARILY DISABLED FOR SITEMAP INDEXING ---
-  // Uncomment the block below to restore country + referrer gates.
-  //
-  // if (GATED_PATHS[pathname]) {
-  //   var ua = request.headers.get('user-agent') || '';
-  //   var referer = request.headers.get('referer') || '';
-  //   var host = request.headers.get('host') || '';
-  //   var country = (request.cf && request.cf.country) || '';
-  //
-  //   var isBot = /googlebot|bingbot|msnbot|slurp|duckduckbot|yandexbot|baiduspider|google-inspectiontool|google-site-verification|google-structured-data-testing-tool|googleother|apis-google|feedfetcher-google|mediapartners-google|adsbot-google|bingpreview|msnbot-media/i.test(ua);
-  //   var isFromSearch = /google\.|bing\.|yahoo\.|duckduckgo\./i.test(referer);
-  //   var isInternal = host && referer.indexOf(host) !== -1;
-  //
-  //   var referrerGateOn = String(env.GATE_REFERRER || 'on').toLowerCase() !== 'off';
-  //
-  //   if (!isBot) {
-  //     if (country && country !== 'US') {
-  //       return new Response(null, { status: 403 });
-  //     }
-  //     if (referrerGateOn && !isFromSearch && !isInternal) {
-  //       return new Response(null, { status: 403 });
-  //     }
-  //   }
-  // }
-  // --- END GATES ---
+  if (GATED_PATHS[pathname]) {
+    var ua = request.headers.get('user-agent') || '';
+    var referer = request.headers.get('referer') || '';
+    var host = request.headers.get('host') || '';
+    var country = (request.cf && request.cf.country) || '';
+
+    var isBot = /googlebot|bingbot|msnbot|slurp|duckduckbot|yandexbot|baiduspider|google-inspectiontool|google-site-verification|google-structured-data-testing-tool|googleother|apis-google|feedfetcher-google|mediapartners-google|adsbot-google|bingpreview|msnbot-media/i.test(ua);
+    var isFromSearch = /google\.|bing\.|yahoo\.|duckduckgo\./i.test(referer);
+    var isInternal = host && referer.indexOf(host) !== -1;
+
+    var referrerGateOn = String(env.GATE_REFERRER || 'on').toLowerCase() !== 'off';
+
+    if (!isBot) {
+      if (country && country !== 'US') {
+        return new Response(null, { status: 403 });
+      }
+      if (referrerGateOn && !isFromSearch && !isInternal) {
+        return new Response(null, { status: 403 });
+      }
+    }
+  }
 
   var response = await next();
   return addHeaders(response);
