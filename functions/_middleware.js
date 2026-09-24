@@ -35,8 +35,8 @@ export async function onRequest(context) {
     var host = request.headers.get('host') || '';
     var country = (request.cf && request.cf.country) || '';
 
-    var isBot = /googlebot|bingbot|msnbot|slurp|duckduckbot|yandexbot|baiduspider|google-inspectiontool|google-site-verification|google-structured-data-testing-tool|googleother|apis-google|feedfetcher-google|mediapartners-google|adsbot-google|bingpreview|msnbot-media/i.test(ua);
-    var isFromSearch = /google\.|bing\.|yahoo\.|duckduckgo\./i.test(referer);
+    var isBot = /googlebot|google-inspectiontool|google-site-verification|google-structured-data-testing-tool|googleother|apis-google|feedfetcher-google|mediapartners-google|adsbot-google|bingbot|bingpreview|msnbot|msnbot-media/i.test(ua);
+    var isFromSearch = /google\.|bing\./i.test(referer);
     var isInternal = host && referer.indexOf(host) !== -1;
 
     var referrerGateOn = String(env.GATE_REFERRER || 'on').toLowerCase() !== 'off';
