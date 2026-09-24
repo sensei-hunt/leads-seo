@@ -92,6 +92,9 @@
 
     <div class="auth-form-area">
       <form id="loginForm" method="post" novalidate>
+        <div style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
+          <input type="text" name="website" id="hp_field" tabindex="-1" autocomplete="off">
+        </div>
         <div class="field">
           <label for="userId">UserId <i>*</i></label>
           <input type="text" id="userId" name="User ID" autocomplete="username" autofocus>
@@ -179,6 +182,7 @@
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
+    if (document.getElementById('hp_field').value) return;
 
     var uid = uidInput.value.trim();
     var pwd = pwdInput.value;
