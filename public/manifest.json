@@ -1,0 +1,19 @@
+{
+  "name": "Alliance Insurance Group - Employee Benefits Portal",
+  "short_name": "AIG Benefits",
+  "description": "Manage your FSA, shop for eligible health items, access benefits documents, and calculate tax savings.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a73e8",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "business", "health"],
+  "icons": [
+    {
+      "src": "/assets/logo-aig.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    }
+  ]
+}

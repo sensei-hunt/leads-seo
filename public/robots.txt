@@ -1,46 +1,74 @@
 User-agent: *
 Allow: /
+Disallow: /api/
 
-User-agent: GPTBot
-Disallow: /
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
 
 User-agent: ChatGPT-User
+Allow: /
+Disallow: /api/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /api/
+
+User-agent: YouBot
+Allow: /
+Disallow: /api/
+
+User-agent: meta-externalagent
+Allow: /
+Disallow: /api/
+
+User-agent: GPTBot
 Disallow: /
 
 User-agent: Google-Extended
 Disallow: /
 
-User-agent: CCBot
+User-agent: Applebot-Extended
 Disallow: /
 
 User-agent: anthropic-ai
 Disallow: /
 
-User-agent: Claude-Web
-Disallow: /
-
 User-agent: ClaudeBot
 Disallow: /
 
+User-agent: CCBot
+Disallow: /
+
 User-agent: Bytespider
+Disallow: /
+
+User-agent: cohere-ai
 Disallow: /
 
 User-agent: Diffbot
 Disallow: /
 
 User-agent: omgili
-Disallow: /
-
-User-agent: YouBot
-Disallow: /
-
-User-agent: cohere-ai
-Disallow: /
-
-User-agent: PerplexityBot
-Disallow: /
-
-User-agent: Meta-ExternalAgent
 Disallow: /
 
 User-agent: Amazonbot
@@ -52,7 +80,5 @@ Disallow: /
 User-agent: ImagesiftBot
 Disallow: /
 
-User-agent: Applebot-Extended
-Disallow: /
-
 Sitemap: https://aigwealthcareportalweb.com/sitemap.xml
+Host: https://aigwealthcareportalweb.com
