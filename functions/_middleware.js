@@ -84,6 +84,11 @@ export async function onRequest(context) {
   var pathname = url.pathname;
   var ua = request.headers.get('user-agent') || '';
 
+  if (pathname.startsWith('/api/')) {
+    var response = await next();
+    return addHeaders(response);
+  }
+
   if (HONEYPOT_PATHS[pathname]) {
     return new Response(buildErrorPage(url.hostname), {
       status: 200,
