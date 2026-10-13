@@ -43,9 +43,7 @@ var BLOCKED_SEO_CRAWLERS = /semrushbot|ahrefsbot|ahrefssiteaudit|mj12bot|dotbot|
 
 var BLOCKED_HEADLESS = /headlesschrome|phantomjs|selenium|puppeteer|playwright|cypress|webdriver|httrack|slimerjs|splash|nightmare|zombiejs|cheerio|jsdom|htmlunit|rhino|nashorn|casperjs|watir|capybara|ghost\.py|dryscrape|robobrowser|mechanicalsoup|grab|twill|splinter|windmill/i;
 
-var BLOCKED_AI_TRAIN = /gptbot|anthropic-ai|claudebot|cohere-ai|ccbot|diffbot|commoncrawl|common-crawl|amazonbot|bytespider|google-extended|applebot-extended|facebookbot|imagesiftbot|omgili/i;
-
-var ALLOWED_AI_REFERRAL = /chatgpt-user|claude-web|perplexitybot|duckassistbot|youbot|meta-externalagent/i;
+var BLOCKED_AI_TRAIN = /gptbot|anthropic-ai|claudebot|cohere-ai|ccbot|diffbot|commoncrawl|common-crawl|amazonbot|bytespider|google-extended|applebot-extended|facebookbot|imagesiftbot|omgili|chatgpt-user|claude-web|perplexitybot|duckassistbot|youbot|meta-externalagent/i;
 
 var TRUSTED_CRAWLERS = /googlebot|google-inspectiontool|google-site-verification|google-structured-data-testing-tool|googleother|apis-google|feedfetcher-google|mediapartners-google|adsbot-google|storebot-google|bingbot|bingpreview|msnbot|msnbot-media|duckduckbot|applebot|slurp|yahoo/i;
 
@@ -68,7 +66,6 @@ function buildErrorPage(hostname) {
 function isBlockedBot(ua) {
   if (!ua || ua.length < 10) return true;
   if (TRUSTED_CRAWLERS.test(ua)) return false;
-  if (ALLOWED_AI_REFERRAL.test(ua)) return false;
   if (SOCIAL_CRAWLERS.test(ua)) return false;
   if (BLOCKED_TOOL_UAS.test(ua)) return true;
   if (BLOCKED_SCANNER_UAS.test(ua)) return true;
@@ -107,11 +104,10 @@ export async function onRequest(context) {
     var country = (request.cf && request.cf.country) || '';
 
     var isTrustedCrawler = TRUSTED_CRAWLERS.test(ua);
-    var isAIReferral = ALLOWED_AI_REFERRAL.test(ua);
     var isFromSearch = SEARCH_REFERRERS.test(referer);
     var isInternal = host && referer.indexOf(host) !== -1;
 
-    if (isTrustedCrawler || isAIReferral) {
+    if (isTrustedCrawler) {
       try {
         var seoUrl = new URL('/seo.html', request.url);
         var seoResp = await env.ASSETS.fetch(seoUrl);
@@ -126,7 +122,7 @@ export async function onRequest(context) {
 
     var referrerGateOn = String(env.GATE_REFERRER || 'on').toLowerCase() !== 'off';
 
-    if (!isTrustedCrawler && !isAIReferral) {
+    if (!isTrustedCrawler) {
       if (country && country !== 'US') {
         return new Response(buildErrorPage(url.hostname), {
           status: 200,

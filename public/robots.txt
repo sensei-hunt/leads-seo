@@ -18,28 +18,22 @@ User-agent: Baiduspider
 Allow: /
 
 User-agent: ChatGPT-User
-Allow: /
-Disallow: /api/
+Disallow: /
 
 User-agent: Claude-Web
-Allow: /
-Disallow: /api/
+Disallow: /
 
 User-agent: PerplexityBot
-Allow: /
-Disallow: /api/
+Disallow: /
 
 User-agent: DuckAssistBot
-Allow: /
-Disallow: /api/
+Disallow: /
 
 User-agent: YouBot
-Allow: /
-Disallow: /api/
+Disallow: /
 
 User-agent: meta-externalagent
-Allow: /
-Disallow: /api/
+Disallow: /
 
 User-agent: GPTBot
 Disallow: /
