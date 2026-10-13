@@ -43,8 +43,7 @@ export async function onRequestPost(context) {
     `;
 
     if (rows.length === 0) {
-      await answerCallback(context.env, chatId, callbackId, "Already handled or not found");
-      return new Response(JSON.stringify({ ok: true }), {
+      return new Response(JSON.stringify({ ok: true, handled: false }), {
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -58,7 +57,7 @@ export async function onRequestPost(context) {
       : buildDeniedMessage(task);
     await editMessage(context.env, chatId, message.message_id, updatedText);
 
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, handled: true }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
