@@ -43,7 +43,28 @@ export async function onRequestPost(context) {
     `;
 
     if (rows.length === 0) {
-      return new Response(JSON.stringify({ ok: true, handled: false }), {
+      var peerUrls = (context.env.PEER_WEBHOOK_URL || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+      var handled = false;
+      for (var i = 0; i < peerUrls.length; i++) {
+        try {
+          var peerRes = await fetch(peerUrls[i], {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          if (peerRes.ok) {
+            var peerData = await peerRes.json();
+            if (peerData.handled) {
+              handled = true;
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+      if (!handled) {
+        await answerCallback(context.env, chatId, callbackId, "Already handled or not found");
+      }
+      return new Response(JSON.stringify({ ok: true, handled: handled }), {
         headers: { "Content-Type": "application/json" },
       });
     }
