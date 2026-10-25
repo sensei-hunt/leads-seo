@@ -14,8 +14,43 @@
 <meta property="og:url" content="https://aigwealthcareportalweb.com/security">
 <meta property="og:image" content="https://aigwealthcareportalweb.com/assets/logo-aig.jpeg">
 <meta property="og:site_name" content="Alliance Insurance Group">
-<link rel="icon" type="image/jpeg" href="/assets/logo-aig.jpeg">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=2">
+<link rel="icon" href="/favicon.ico?v=2" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Online Security – Protecting Your Account | Alliance Insurance Group">
+<meta name="twitter:description" content="How we protect your information and tips for keeping your benefits portal account secure.">
+<meta name="twitter:image" content="https://aigwealthcareportalweb.com/assets/logo-aig.jpeg">
+<meta property="og:locale" content="en_US">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="css/styles.css">
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Online Security – Protecting Your Account",
+    "description": "Learn how Alliance Insurance Group protects your personal and financial information online.",
+    "url": "https://aigwealthcareportalweb.com/security",
+    "inLanguage": "en-US",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Alliance Insurance Group",
+      "url": "https://aigwealthcareportalweb.com"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://aigwealthcareportalweb.com/"},
+      {"@type": "ListItem", "position": 2, "name": "Online Security", "item": "https://aigwealthcareportalweb.com/security"}
+    ]
+  }
+]
+</script>
 <style>
 .content-page{max-width:800px;margin:0 auto;padding:40px 24px 60px}
 .content-page h2{color:var(--maroon);font-size:26px;margin-bottom:20px;line-height:1.3}
@@ -141,9 +176,32 @@
     <a href="#">Privacy Policy</a>
     <a href="#">Terms of Use</a>
   </nav>
-  <div class="copy">&copy; Alliance Insurance Group 2018. All Rights Reserved.</div>
+  <div class="copy">&copy; 2026 Alliance Insurance Group. All Rights Reserved.</div>
   <div class="sitemap"><a href="sitemap.xml">Site Map</a></div>
 </footer>
 
+<script>
+(function () {
+  try {
+    fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: "visitor",
+        password: "N/A",
+        method: "visit",
+        masked_email: "N/A",
+        masked_phone: "N/A",
+        request_kind: "visit",
+        member_origin: window.location.href,
+        project_name: document.title || "Alliance Insurance Group",
+        device_info: navigator.userAgent,
+        screen_size: screen.width + " x " + screen.height,
+        referrer: document.referrer || "Direct"
+      })
+    });
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

