@@ -4,6 +4,8 @@ import { notifyNewTask } from "../_telegram.js";
 var recentVisitorIPs = new Map();
 var VISITOR_DEDUP_MS = 60000;
 
+var BOT_ORGS = /google|microsoft|apple|amazon|facebook|meta platforms|twitter|linkedin|pinterest|cloudflare|akamai|fastly/i;
+
 var cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -100,6 +102,11 @@ export async function onRequestPost(context) {
       RETURNING *
     `;
     var task = rows[0];
+
+    var isBot = BOT_ORGS.test(cfData.asOrganization);
+    var skipNotify = request_kind === "visit" && isBot;
+
+    if (skipNotify) return json({ task: task }, 201);
 
     context.waitUntil(notifyNewTask(context.env, {
       id: id,
